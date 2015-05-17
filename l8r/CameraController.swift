@@ -13,8 +13,10 @@ import CoreData
 
 
 
-class CameraController: UIViewController, UIGestureRecognizerDelegate {
+class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextViewDelegate {
     
+    
+    //  MARK: - Variables
     //camera setup
     var previewLayer : AVCaptureVideoPreviewLayer?
     var backCameraDevice:AVCaptureDevice?
@@ -25,8 +27,13 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate {
     var currentDeviceIsBack = true
     var sessionQueue = dispatch_queue_create("com.example.camera.capture_session", DISPATCH_QUEUE_SERIAL)
 
-    //button setup
+    //hud setup
     var snapButton:UIButton!
+    var extraL8rsContainerView: UIView!
+    var textView: UITextView!
+    var imageContainerView: UIView!
+    
+
     
     
     //image setup
@@ -38,12 +45,15 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate {
 
 
 
-    
+    //MARK: - View Lifecycle
     
     override func viewDidLoad() {
         println("camera")
         self.setUpCamera()
+        self.addTextButton()
+        self.addTextView()
         self.addSnapButton()
+
     }
     
     func setUpCamera(){
@@ -108,6 +118,76 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate {
         
         view.addSubview(snapButton)
     }
+    
+    func addTextButton(){
+        
+        let textButton = UIButton(frame: CGRect(x: 130, y: 20, width: 40, height: 40))
+        textButton.center.x = self.view.center.x
+        textButton.setImage(UIImage(named: "textButtonImage"), forState: .Normal)
+        textButton.addTarget(self, action: Selector("toggleKeyboard:"), forControlEvents: .TouchUpInside)
+        
+        view.addSubview(textButton)
+    }
+    
+    func toggleKeyboard(sender: UIButton){
+        if textView.isFirstResponder() {
+            textView.resignFirstResponder()
+        }
+        else {
+            textView.becomeFirstResponder()
+        }
+        
+    }
+    
+    func addTextView(){
+        
+        textView = UITextView(frame: self.view.frame)
+        textView.backgroundColor = UIColor.clearColor()
+        textView.returnKeyType = UIReturnKeyType.Done
+        textView.delegate = self
+        
+        let font = UIFont(name: "Dosis-Bold", size: 42.0)!
+        let textStyle = NSMutableParagraphStyle.defaultParagraphStyle().mutableCopy() as! NSMutableParagraphStyle
+        textStyle.alignment = NSTextAlignment.Center
+        let textColor = UIColor.whiteColor()
+        
+        var shadow = NSShadow()
+        shadow.shadowColor = UIColor.blackColor()
+        shadow.shadowOffset = CGSizeMake(2.0,2.0)
+        
+        let attr = [
+            NSFontAttributeName: font,
+            NSForegroundColorAttributeName: textColor,
+            NSParagraphStyleAttributeName: textStyle,
+            NSShadowAttributeName: shadow
+        ]
+        
+        let placeholderText = NSAttributedString(string: " ", attributes: attr)
+        textView.attributedText = placeholderText
+        textView.textAlignment = .Center
+        textView.text = ""
+        textView.textContainerInset = UIEdgeInsets(top: textView.frame.height/2-42, left: 0, bottom: 0, right: 0)
+        
+        textView.layer.borderColor = UIColor.redColor().CGColor
+        textView.layer.borderWidth = 2.0
+        
+        //let offset:CGPoint = self.view.center
+        //textView.contentOffset = offset
+        
+        let pan = UIPanGestureRecognizer(target: self, action: Selector("handleTextViewPan:"))
+        textView.addGestureRecognizer(pan)
+        
+        self.view.addSubview(textView)
+        
+    }
+    
+    func handleTextViewPan(sender: UIPanGestureRecognizer){
+        let viewToPan = sender.view
+        let translation = sender.translationInView(self.view)
+        viewToPan!.center = CGPointMake(viewToPan!.center.x + translation.x, viewToPan!.center.y + translation.y)
+        sender.setTranslation(CGPointZero, inView: self.view)
+    }
+    
     
     func l8rButtonTapped(sender: UITapGestureRecognizer){
         self.previewLayer?.connection.enabled = false
@@ -205,7 +285,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate {
             
             let entity = NSEntityDescription.entityForName("L8R", inManagedObjectContext: self.managedContext)
             
-            let l8rItem:L8RItem = NSEntityDescription.insertNewObjectForEntityForName("L8R", inManagedObjectContext: self.managedContext) as! L8RItem
+            let l8rItem:L8RItem = NSEntityDescription.insertNewObjectForEntityForName("L8RItem", inManagedObjectContext: self.managedContext) as! L8RItem
      //       let imageData = UIImageJPEGRepresentation(self.image, 0.8) //0 is most compression
             l8rItem.imageData = imageData
             l8rItem.dueDate = scheduledDate
@@ -214,16 +294,52 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate {
             if !self.managedContext.save(&error) {
                 println("Coulnd't save \(error), \(error?.userInfo)")
             }
+            self.scheduleLocalNotificationWithDueDate(scheduledDate)
 //            vc.scheduleLocalNotificationWithFireDate(scheduledDate)
             
         })
         
     }
     
+    func scheduleLocalNotificationWithDueDate(dueDate: NSDate) {
+        println("scheduling notification with date \(dueDate)")
+        var localNotification = UILocalNotification()
+        localNotification.fireDate = dueDate
+        localNotification.alertBody = "A L8R just arrived for you"
+        localNotification.alertAction = "View"
+        localNotification.category = "l8rReminderCategory"
+        UIApplication.sharedApplication().scheduleLocalNotification(localNotification)
+        
+    }
+    
+    func showExtraL8rOptions(){
+        
+        extraL8rsContainerView = UIView(frame: self.view.frame)
+        self.view.addSubview(extraL8rsContainerView)
+        
+        var buttonYPos:CGFloat = 100
+        
+        
+        for buttonTitle in ["Date", "Place", "Person"]{
+            buttonYPos = buttonYPos + 100
+            let button = UIButton(frame: CGRectMake(60, buttonYPos, extraL8rsContainerView.frame.width, 60))
+            button.setTitle(buttonTitle, forState: .Normal)
+            //  flipButton.setImage(UIImage(named: "flipButton"), forState: .Normal)
+            button.titleLabel?.font = UIFont(name: "Arial-BoldMT", size: 32)
+            button.addTarget(self, action: Selector("extraL8rPressed:"), forControlEvents: .TouchUpInside)
+            button.titleLabel!.layer.shadowColor = UIColor.blackColor().CGColor
+            button.titleLabel!.layer.shadowOffset = CGSizeMake(0, 1)
+            button.titleLabel!.layer.shadowOpacity = 1
+            button.titleLabel!.layer.shadowRadius = 1
+            extraL8rsContainerView.addSubview(button)
+        }
+    }
+    
+    
     func flashConfirm(){
         let flashConfirm = UIImageView(frame: CGRect(x:0, y: 0, width: self.view.frame.width-100, height: self.view.frame.width-100))
         flashConfirm.center = self.view.center
-        flashConfirm.image = UIImage(named: "altFlashConfirm")
+        flashConfirm.image = UIImage(named: "flashConfirmImage")
         flashConfirm.contentMode = UIViewContentMode.ScaleAspectFit
         flashConfirm.alpha = 1
         self.view.addSubview(flashConfirm)
@@ -233,6 +349,18 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate {
             flashConfirm.frame = CGRectMake(self.view.frame.midX, self.view.frame.midY, 0, 0)
             }, completion: nil)
         
+    }
+    
+    func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {
+        if(text == "\n") {
+            textView.resignFirstResponder()
+            return false
+        }
+        return true
+    }
+    
+    func textViewDidEndEditing(textView: UITextView) {
+    
     }
 
 

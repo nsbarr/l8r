@@ -18,6 +18,7 @@
 		013955101B07BC7300C553F1 /* InboxController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0139550F1B07BC7300C553F1 /* InboxController.swift */; };
 		013955121B07BCAC00C553F1 /* MagicController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013955111B07BCAC00C553F1 /* MagicController.swift */; };
 		013955141B08111E00C553F1 /* L8RItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013955131B08111E00C553F1 /* L8RItem.swift */; };
+		016BF3711B0951B500935D59 /* Dosis-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 016BF3701B0951B500935D59 /* Dosis-Bold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,6 +47,7 @@
 		0139550F1B07BC7300C553F1 /* InboxController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InboxController.swift; sourceTree = "<group>"; };
 		013955111B07BCAC00C553F1 /* MagicController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MagicController.swift; sourceTree = "<group>"; };
 		013955131B08111E00C553F1 /* L8RItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = L8RItem.swift; sourceTree = "<group>"; };
+		016BF3701B0951B500935D59 /* Dosis-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Dosis-Bold.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,6 +71,7 @@
 		013954DC1B07B93300C553F1 = {
 			isa = PBXGroup;
 			children = (
+				016BF3701B0951B500935D59 /* Dosis-Bold.ttf */,
 				013955131B08111E00C553F1 /* L8RItem.swift */,
 				013954E71B07B93300C553F1 /* l8r */,
 				013955001B07B93300C553F1 /* l8rTests */,
@@ -209,6 +212,7 @@
 			files = (
 				013954F31B07B93300C553F1 /* Main.storyboard in Resources */,
 				013954F81B07B93300C553F1 /* LaunchScreen.xib in Resources */,
+				016BF3711B0951B500935D59 /* Dosis-Bold.ttf in Resources */,
 				013954F51B07B93300C553F1 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

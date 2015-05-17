@@ -15,10 +15,18 @@ class ViewController: UIViewController, UIPageViewControllerDelegate, UIPageView
     var magicController: MagicController!
     var cameraController: CameraController!
     var inboxController: InboxController!
+    
+    //MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.setupNotificationSettings()
         self.createPageViewController()
+        
+    }
+    
+    override func prefersStatusBarHidden() -> Bool {
+        return true
     }
     
     func createPageViewController(){
@@ -89,9 +97,7 @@ class ViewController: UIViewController, UIPageViewControllerDelegate, UIPageView
         println("getting index \(index)")
         
         if index == 0 {
-            
             return magicController
-            
         }
         else if index == 1 {
             
@@ -109,6 +115,46 @@ class ViewController: UIViewController, UIPageViewControllerDelegate, UIPageView
             return nil
         }
     }
+    
+    func setupNotificationSettings() {
+        
+        let notificationSettings: UIUserNotificationSettings! = UIApplication.sharedApplication().currentUserNotificationSettings()
+        
+        if (notificationSettings.types == UIUserNotificationType.None){
+            
+            var notificationTypes: UIUserNotificationType = UIUserNotificationType.Alert | UIUserNotificationType.Badge
+            
+            var ignoreAction = UIMutableUserNotificationAction()
+            ignoreAction.identifier = "ignore"
+            ignoreAction.title = "Ignore"
+            ignoreAction.activationMode = UIUserNotificationActivationMode.Background
+            ignoreAction.destructive = false
+            ignoreAction.authenticationRequired = false
+            
+            var viewAction = UIMutableUserNotificationAction()
+            viewAction.identifier = "view"
+            viewAction.title = "View"
+            viewAction.activationMode = UIUserNotificationActivationMode.Foreground
+            viewAction.destructive = false
+            viewAction.authenticationRequired = true
+            
+            let actionsArray = NSArray(objects: ignoreAction, viewAction)
+            
+            var l8rReminderCategory = UIMutableUserNotificationCategory()
+            l8rReminderCategory.identifier = "l8rReminderCategory"
+            l8rReminderCategory.setActions(actionsArray as [AnyObject], forContext: UIUserNotificationActionContext.Default)
+            l8rReminderCategory.setActions(actionsArray as [AnyObject], forContext: UIUserNotificationActionContext.Minimal)
+            
+            
+            let categoriesForSettings = NSSet(objects: l8rReminderCategory)
+            
+            
+            let newNotificationSettings = UIUserNotificationSettings(forTypes: notificationTypes, categories: categoriesForSettings as Set<NSObject>)
+            
+            UIApplication.sharedApplication().registerUserNotificationSettings(newNotificationSettings)
+        }
+    }
+
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
