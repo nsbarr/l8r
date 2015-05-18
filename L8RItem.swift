@@ -14,6 +14,7 @@ class L8RItem: NSManagedObject {
     @NSManaged var dueDate: NSDate?
     @NSManaged var imageData: NSData?
     @NSManaged var text: String?
+    @NSManaged var textPosition: String?
     
     lazy var objectIDString:String! = {
         self.objectID.URIRepresentation().absoluteString

@@ -29,12 +29,18 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
 
     //hud setup
     var snapButton:UIButton!
+    var flipButton:UIButton!
     var extraL8rsContainerView: UIView!
-    var textView: UITextView!
     var imageContainerView: UIView!
+    var inboxButton: UIButton!
     
 
-    
+    //text setup
+    var textView: UITextView!
+    var l8rText = String()
+    var pan: UIPanGestureRecognizer?
+
+
     
     //image setup
     var snapshotImage: UIImage!
@@ -43,17 +49,16 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
     var managedContext: NSManagedObjectContext!
 
 
-
-
     //MARK: - View Lifecycle
     
     override func viewDidLoad() {
         println("camera")
         self.setUpCamera()
-        self.addTextButton()
         self.addTextView()
+        self.addTextButton()
+        self.addFlipButton()
         self.addSnapButton()
-
+        self.addInboxButton()
     }
     
     func setUpCamera(){
@@ -119,8 +124,81 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         view.addSubview(snapButton)
     }
     
+    func addInboxButton(){
+        
+        //TODO: - don't hardcode this
+    
+        inboxButton = UIButton(frame: CGRectMake(self.view.frame.width-(20+30),self.view.frame.height-60, 30, 30))
+        inboxButton.addTarget(self, action: Selector("swipeToInbox"), forControlEvents:UIControlEvents.TouchUpInside)
+        let inboxButtonImage = UIImage(named: "inboxButtonImage")
+        inboxButton.setImage(inboxButtonImage, forState: .Normal)
+        inboxButton.alpha = 1
+        view.addSubview(inboxButton)
+    
+    }
+    
+    
+    func addFlipButton(){
+        flipButton = UIButton(frame: CGRectMake(10, 20, 40, 40))
+        flipButton.setTitle("😎", forState: .Normal)
+        flipButton.setTitle("🌎", forState: .Selected)
+        flipButton.titleLabel?.font = UIFont(name: "Arial-BoldMT", size: 32)
+        flipButton.addTarget(self, action: Selector("toggleCamera:"), forControlEvents: .TouchUpInside)
+        flipButton.titleLabel!.layer.shadowColor = UIColor.blackColor().CGColor
+        flipButton.titleLabel!.layer.shadowOffset = CGSizeMake(0, 1)
+        flipButton.titleLabel!.layer.shadowOpacity = 1
+        flipButton.titleLabel!.layer.shadowRadius = 1
+        view.addSubview(flipButton)
+    }
+    
+    func toggleCamera(sender: UIButton) {
+        
+        if currentDeviceIsBack {
+            var error:NSError?
+            let possibleCameraInput: AnyObject? = AVCaptureDeviceInput.deviceInputWithDevice(frontCameraDevice, error: &error)
+            if let frontCameraInput = possibleCameraInput as? AVCaptureDeviceInput {
+                self.session.beginConfiguration()
+                self.session.removeInput(currentInput)
+                currentInput = frontCameraInput
+                self.session.addInput(currentInput)
+                self.session.commitConfiguration()
+                currentDeviceIsBack = false
+                sender.selected = !sender.selected
+            }
+            else {
+                println("front camera not possible i guess?")
+            }
+        }
+        else {
+            var error:NSError?
+            let possibleCameraInput: AnyObject? = AVCaptureDeviceInput.deviceInputWithDevice(backCameraDevice, error: &error)
+            if let backCameraInput = possibleCameraInput as? AVCaptureDeviceInput {
+                self.session.beginConfiguration()
+                self.session.removeInput(currentInput)
+                currentInput = backCameraInput
+                self.session.addInput(currentInput)
+                self.session.commitConfiguration()
+                currentDeviceIsBack = true
+                sender.selected = !sender.selected
+            }
+            else {
+                println("back camera not possible i guess?")
+            }
+            
+        }
+        
+    }
+    
+    func swipeToInbox(){
+        let pvc = self.parentViewController as! UIPageViewController
+        let ic = self.storyboard!.instantiateViewControllerWithIdentifier("InboxController") as! InboxController
+        pvc.setViewControllers([ic], direction: .Forward, animated: true, completion: nil)
+    }
+    
     func addTextButton(){
         
+        //TODO: - don't hardcode this
+
         let textButton = UIButton(frame: CGRect(x: 130, y: 20, width: 40, height: 40))
         textButton.center.x = self.view.center.x
         textButton.setImage(UIImage(named: "textButtonImage"), forState: .Normal)
@@ -137,6 +215,18 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
             textView.becomeFirstResponder()
         }
         
+    }
+    
+    func refreshCameraView(){
+        
+        self.previewLayer?.connection.enabled = true
+        textView.text = ""
+        textView.frame = self.view.frame
+        textView.frame.origin.y = self.view.frame.midY-100
+        
+        if pan != nil {
+            textView.removeGestureRecognizer(pan!)
+        }
     }
     
     func addTextView(){
@@ -166,17 +256,14 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         textView.attributedText = placeholderText
         textView.textAlignment = .Center
         textView.text = ""
-        textView.textContainerInset = UIEdgeInsets(top: textView.frame.height/2-42, left: 0, bottom: 0, right: 0)
+        textView.textContainerInset = UIEdgeInsets(top: 40, left: 0, bottom: 40, right: 0)
         
+        //TODO: Maybe contentOffset is better here.
+        
+        textView.frame.origin.y = self.view.frame.midY-100
         textView.layer.borderColor = UIColor.redColor().CGColor
         textView.layer.borderWidth = 2.0
-        
-        //let offset:CGPoint = self.view.center
-        //textView.contentOffset = offset
-        
-        let pan = UIPanGestureRecognizer(target: self, action: Selector("handleTextViewPan:"))
-        textView.addGestureRecognizer(pan)
-        
+        textView.clipsToBounds = true
         self.view.addSubview(textView)
         
     }
@@ -227,9 +314,6 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
                             imageView.image = theImage
                         }
                         
-//                        self.textView.frame.origin.x = self.textView.frame.origin.x + (imageView.frame.width-self.view.frame.width)/2
-//                        imageView.addSubview(self.textView)
-                        
                         UIGraphicsBeginImageContextWithOptions(imageView.bounds.size, imageView.opaque, 0.0)
                         imageView.drawViewHierarchyInRect(imageView.bounds, afterScreenUpdates: true)
                         let snapshotImage = UIGraphicsGetImageFromCurrentImageContext()
@@ -258,14 +342,11 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
                             self.saveL8rWithDate(scheduledDate, imageData:imageData)
 
                             self.flashConfirm()
-                            self.previewLayer?.connection.enabled = true
-                     //       self.addTextView()
-                            
+                            self.refreshCameraView()
                         }
                         else {
                             println("kind of class is \(sender)")
                         }
-                        
                     }
                 }
                     
@@ -286,19 +367,20 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
             let entity = NSEntityDescription.entityForName("L8R", inManagedObjectContext: self.managedContext)
             
             let l8rItem:L8RItem = NSEntityDescription.insertNewObjectForEntityForName("L8RItem", inManagedObjectContext: self.managedContext) as! L8RItem
-     //       let imageData = UIImageJPEGRepresentation(self.image, 0.8) //0 is most compression
+            //TODO: Does compression happen here?
             l8rItem.imageData = imageData
             l8rItem.dueDate = scheduledDate
+            l8rItem.text = self.l8rText
+            l8rItem.textPosition = NSStringFromCGPoint(self.textView.center)
+            
+            println(l8rItem)
             
             var error: NSError?
             if !self.managedContext.save(&error) {
                 println("Coulnd't save \(error), \(error?.userInfo)")
             }
             self.scheduleLocalNotificationWithDueDate(scheduledDate)
-//            vc.scheduleLocalNotificationWithFireDate(scheduledDate)
-            
         })
-        
     }
     
     func scheduleLocalNotificationWithDueDate(dueDate: NSDate) {
@@ -309,7 +391,6 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         localNotification.alertAction = "View"
         localNotification.category = "l8rReminderCategory"
         UIApplication.sharedApplication().scheduleLocalNotification(localNotification)
-        
     }
     
     func showExtraL8rOptions(){
@@ -318,13 +399,11 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         self.view.addSubview(extraL8rsContainerView)
         
         var buttonYPos:CGFloat = 100
-        
-        
+    
         for buttonTitle in ["Date", "Place", "Person"]{
             buttonYPos = buttonYPos + 100
             let button = UIButton(frame: CGRectMake(60, buttonYPos, extraL8rsContainerView.frame.width, 60))
             button.setTitle(buttonTitle, forState: .Normal)
-            //  flipButton.setImage(UIImage(named: "flipButton"), forState: .Normal)
             button.titleLabel?.font = UIFont(name: "Arial-BoldMT", size: 32)
             button.addTarget(self, action: Selector("extraL8rPressed:"), forControlEvents: .TouchUpInside)
             button.titleLabel!.layer.shadowColor = UIColor.blackColor().CGColor
@@ -348,24 +427,34 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
             flashConfirm.alpha = 0
             flashConfirm.frame = CGRectMake(self.view.frame.midX, self.view.frame.midY, 0, 0)
             }, completion: nil)
-        
     }
     
     func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {
         if(text == "\n") {
+            
+            //TODO: trying to resize text view. (need to think about container inset)
+            l8rText = textView.text
+            if pan != nil {
+                textView.removeGestureRecognizer(pan!)
+            }
+            if !l8rText.isEmpty{
+                let fixedWidth = textView.frame.size.width
+                let newSize = textView.sizeThatFits(CGSizeMake(fixedWidth, CGFloat(MAXFLOAT)))
+                var newFrame = textView.frame
+                newFrame.size = CGSizeMake(CGFloat(fmaxf(Float(newSize.width), Float(fixedWidth))), newSize.height)
+                textView.frame = newFrame
+                
+                pan = UIPanGestureRecognizer(target: self, action: Selector("handleTextViewPan:"))
+                textView.addGestureRecognizer(pan!)
+            }
+            else {
+                textView.frame = self.view.frame
+                textView.frame.origin.y = self.view.frame.midY-100
+            }
+            
             textView.resignFirstResponder()
             return false
         }
         return true
     }
-    
-    func textViewDidEndEditing(textView: UITextView) {
-    
-    }
-
-
-
-
-    
-
 }

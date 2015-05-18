@@ -35,6 +35,7 @@ class ViewController: UIViewController, UIPageViewControllerDelegate, UIPageView
         cameraController = self.storyboard!.instantiateViewControllerWithIdentifier("CameraController") as! CameraController
         inboxController = self.storyboard!.instantiateViewControllerWithIdentifier("InboxController") as! InboxController
         
+        
         let pageController = self.storyboard!.instantiateViewControllerWithIdentifier("PageController") as! UIPageViewController
         pageController.delegate = self
         pageController.dataSource = self
@@ -44,7 +45,7 @@ class ViewController: UIViewController, UIPageViewControllerDelegate, UIPageView
         let startingViewControllers = [startingViewController]
         
 
-        
+        pageController.addChildViewController(cameraController)
         self.view.addSubview(pageController.view)
         pageController.didMoveToParentViewController(self)
         

@@ -4,8 +4,9 @@
         <attribute name="dueDate" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="imageData" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="text" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="textPosition" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <elements>
-        <element name="L8RItem" positionX="-63" positionY="-18" width="128" height="90"/>
+        <element name="L8RItem" positionX="-63" positionY="-18" width="128" height="105"/>
     </elements>
 </model>

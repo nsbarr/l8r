@@ -19,6 +19,7 @@
 		013955121B07BCAC00C553F1 /* MagicController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013955111B07BCAC00C553F1 /* MagicController.swift */; };
 		013955141B08111E00C553F1 /* L8RItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013955131B08111E00C553F1 /* L8RItem.swift */; };
 		016BF3711B0951B500935D59 /* Dosis-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 016BF3701B0951B500935D59 /* Dosis-Bold.ttf */; };
+		01C8D40D1B0A2B0600FD95AA /* CardStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01C8D40C1B0A2B0600FD95AA /* CardStack.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +49,7 @@
 		013955111B07BCAC00C553F1 /* MagicController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MagicController.swift; sourceTree = "<group>"; };
 		013955131B08111E00C553F1 /* L8RItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = L8RItem.swift; sourceTree = "<group>"; };
 		016BF3701B0951B500935D59 /* Dosis-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Dosis-Bold.ttf"; sourceTree = "<group>"; };
+		01C8D40C1B0A2B0600FD95AA /* CardStack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CardStack.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,6 +98,7 @@
 				013954F11B07B93300C553F1 /* Main.storyboard */,
 				013955111B07BCAC00C553F1 /* MagicController.swift */,
 				0139550F1B07BC7300C553F1 /* InboxController.swift */,
+				01C8D40C1B0A2B0600FD95AA /* CardStack.swift */,
 				0139550D1B07BB8D00C553F1 /* CameraController.swift */,
 				013954F41B07B93300C553F1 /* Images.xcassets */,
 				013954F61B07B93300C553F1 /* LaunchScreen.xib */,
@@ -233,6 +236,7 @@
 			files = (
 				013954F01B07B93300C553F1 /* ViewController.swift in Sources */,
 				013954EE1B07B93300C553F1 /* l8r.xcdatamodeld in Sources */,
+				01C8D40D1B0A2B0600FD95AA /* CardStack.swift in Sources */,
 				013955101B07BC7300C553F1 /* InboxController.swift in Sources */,
 				013955121B07BCAC00C553F1 /* MagicController.swift in Sources */,
 				0139550E1B07BB8D00C553F1 /* CameraController.swift in Sources */,
