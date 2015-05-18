@@ -76,8 +76,17 @@
                     <view key="view" contentMode="scaleToFill" id="EBE-pR-gQI">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dml-Lx-dUY" customClass="CardStack" customModule="l8r" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="10" width="600" height="600"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </view>
+                        </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
+                    <connections>
+                        <outlet property="cardStackView" destination="dml-Lx-dUY" id="k6n-ih-ep2"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="whw-Hn-lf8" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
