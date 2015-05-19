@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 import CoreData
 
-class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackDelegate {
+class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackDelegate, UITextViewDelegate {
     
     //MARK: - Variables
 
@@ -69,6 +69,9 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(false)
+        println("view will appear")
+
+        self.fetchL8rs()
         self.cardStackView.delegate = self
         self.cardStackView.loadStack()
         self.updateButtonFrames()
@@ -77,6 +80,8 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
     
     override func viewDidDisappear(animated: Bool) {
         super.viewDidDisappear(false)
+        println("view will disappear")
+
         self.cardStackView.unloadStack()
     }
     
@@ -214,8 +219,10 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
             scheduledDate = theCalendar.dateFromComponents(tomorrowAt9AmComponents)
             
             self.updateL8rWithDate(scheduledDate)
-            
             self.flashConfirm()
+            self.dismissTopCard()
+            self.fetchL8rs()
+
         }
         else {
             println("kind of class is \(sender)")
@@ -256,7 +263,6 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
             
         })
         
-        self.fetchL8rs()
     }
     
     
@@ -348,21 +354,71 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
             uniqueId = l8rs[index].objectIDString
         }
         
+        
         let imageData = l8rsById[uniqueId]?.imageData
         let image = UIImage(data: imageData!, scale: 1.0)!
         //       let ratio = frame.height/image.size.height
         
         println("frame passed in: \(frame)")
         let card: Card = Card(frame: frame)
-        card.backgroundColor = UIColor(red: 0, green: 0, blue: 240, alpha: 0)
+        
+        let cardImageView = UIImageView(frame:card.frame)
+        
+        cardImageView.contentMode = UIViewContentMode.ScaleAspectFill
+        cardImageView.image = image
+        
+        card.addSubview(cardImageView)
+        card.addSubview(addTextViewWithText(l8rsById[uniqueId]!.text!, position: l8rsById[uniqueId]!.textPosition!))
+
         card.cardId = uniqueId
         card.center.x = view.center.x
-        card.image = image
         
         card.clipsToBounds = true
-        card.contentMode = UIViewContentMode.ScaleAspectFill
         
         return card
+    }
+    
+    func addTextViewWithText(text:String, position:String) -> UITextView{
+        
+        let textView = UITextView(frame: self.view.frame)
+        textView.editable = false
+        
+        textView.backgroundColor = UIColor.clearColor()
+        textView.returnKeyType = UIReturnKeyType.Done
+        textView.delegate = self
+        
+        let font = UIFont(name: "Dosis-Bold", size: 42.0)!
+        let textStyle = NSMutableParagraphStyle.defaultParagraphStyle().mutableCopy() as! NSMutableParagraphStyle
+        textStyle.alignment = NSTextAlignment.Center
+        let textColor = UIColor.whiteColor()
+        
+        var shadow = NSShadow()
+        shadow.shadowColor = UIColor.blackColor()
+        shadow.shadowOffset = CGSizeMake(2.0,2.0)
+        
+        let attr = [
+            NSFontAttributeName: font,
+            NSForegroundColorAttributeName: textColor,
+            NSParagraphStyleAttributeName: textStyle,
+            NSShadowAttributeName: shadow
+        ]
+        
+        textView.attributedText = NSAttributedString(string: text, attributes: attr)
+        textView.textAlignment = .Center
+
+        let fixedWidth = textView.frame.size.width
+        let newSize = textView.sizeThatFits(CGSizeMake(fixedWidth, CGFloat(MAXFLOAT)))
+        var newFrame = textView.frame
+        newFrame.size = CGSizeMake(CGFloat(fmaxf(Float(newSize.width), Float(fixedWidth))), newSize.height)
+        textView.frame = newFrame
+
+        
+        let center = CGPointFromString(position)
+        textView.center = center
+        
+        
+        return textView
+        
     }
     
     

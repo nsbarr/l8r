@@ -261,8 +261,8 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         //TODO: Maybe contentOffset is better here.
         
         textView.frame.origin.y = self.view.frame.midY-100
-        textView.layer.borderColor = UIColor.redColor().CGColor
-        textView.layer.borderWidth = 2.0
+    //    textView.layer.borderColor = UIColor.redColor().CGColor
+    //    textView.layer.borderWidth = 2.0
         textView.clipsToBounds = true
         self.view.addSubview(textView)
         
@@ -273,6 +273,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         let translation = sender.translationInView(self.view)
         viewToPan!.center = CGPointMake(viewToPan!.center.x + translation.x, viewToPan!.center.y + translation.y)
         sender.setTranslation(CGPointZero, inView: self.view)
+        println(textView.center)
     }
     
     
@@ -304,21 +305,24 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
 
                     if let theImage = UIImage(data: imageData, scale: 1.0) {
                         
-                        let imageView = UIImageView(frame: CGRectMake(0, 0, theImage.size.width*self.view.frame.height/theImage.size.height, self.view.frame.height))
-                        imageView.contentMode = UIViewContentMode.ScaleToFill
-
-                        if !self.currentDeviceIsBack {
-                            imageView.image = UIImage(CGImage: theImage.CGImage, scale: theImage.scale, orientation: UIImageOrientation.LeftMirrored)
-                        }
-                        else {
-                            imageView.image = theImage
-                        }
                         
-                        UIGraphicsBeginImageContextWithOptions(imageView.bounds.size, imageView.opaque, 0.0)
-                        imageView.drawViewHierarchyInRect(imageView.bounds, afterScreenUpdates: true)
-                        let snapshotImage = UIGraphicsGetImageFromCurrentImageContext()
-                        UIGraphicsEndImageContext()
-                        self.snapshotImage = snapshotImage
+//                        //stuff that has to do with saving the image
+//                        
+//                        let imageView = UIImageView(frame: CGRectMake(0, 0, theImage.size.width*self.view.frame.height/theImage.size.height, self.view.frame.height))
+//                        imageView.contentMode = UIViewContentMode.ScaleToFill
+//
+//                        if !self.currentDeviceIsBack {
+//                            imageView.image = UIImage(CGImage: theImage.CGImage, scale: theImage.scale, orientation: UIImageOrientation.LeftMirrored)
+//                        }
+//                        else {
+//                            imageView.image = theImage
+//                        }
+//                        
+//                        UIGraphicsBeginImageContextWithOptions(imageView.bounds.size, imageView.opaque, 0.0)
+//                        imageView.drawViewHierarchyInRect(imageView.bounds, afterScreenUpdates: true)
+//                        let snapshotImage = UIGraphicsGetImageFromCurrentImageContext()
+//                        UIGraphicsEndImageContext()
+//                        self.snapshotImage = snapshotImage
                         
                         //TODO: we shouldn't have to wait for the snapshot to bring up the l8r options
                     
@@ -332,14 +336,25 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
                             var scheduledDate: NSDate!
                             var theCalendar = NSCalendar.currentCalendar()
                             let currentTime = NSDate()
-                            let tomorrowComponent = NSDateComponents()
-                            tomorrowComponent.day = 1
-                            let tomorrow = theCalendar.dateByAddingComponents(tomorrowComponent, toDate: currentTime, options: NSCalendarOptions(0))
-                            let tomorrowAt9AmComponents = theCalendar.components(NSCalendarUnit.CalendarUnitCalendar|NSCalendarUnit.CalendarUnitYear|NSCalendarUnit.CalendarUnitMonth|NSCalendarUnit.CalendarUnitDay, fromDate: tomorrow!)
-                            tomorrowAt9AmComponents.hour = 9
-                            scheduledDate = theCalendar.dateFromComponents(tomorrowAt9AmComponents)
+                            
+                            
+//                            //tomorrow at 9am
+//                            let tomorrowComponent = NSDateComponents()
+//                            tomorrowComponent.day = 1
+//                            let tomorrow = theCalendar.dateByAddingComponents(tomorrowComponent, toDate: currentTime, options: NSCalendarOptions(0))
+//                            let tomorrowAt9AmComponents = theCalendar.components(NSCalendarUnit.CalendarUnitCalendar|NSCalendarUnit.CalendarUnitYear|NSCalendarUnit.CalendarUnitMonth|NSCalendarUnit.CalendarUnitDay, fromDate: tomorrow!)
+//                            tomorrowAt9AmComponents.hour = 9
+//                            scheduledDate = theCalendar.dateFromComponents(tomorrowAt9AmComponents)
+                            
+                            
+                            //in a second (for testing)
+                            let timeComponent = NSDateComponents()
+                            timeComponent.second = 1
+                            scheduledDate = theCalendar.dateByAddingComponents(timeComponent, toDate: currentTime, options: NSCalendarOptions(0))
+                            
+                            let textViewPosition = self.textView.center
                         
-                            self.saveL8rWithDate(scheduledDate, imageData:imageData)
+                            self.saveL8rWithDate(scheduledDate, imageData:imageData, position:textViewPosition)
 
                             self.flashConfirm()
                             self.refreshCameraView()
@@ -357,7 +372,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         }
     }
     
-    func saveL8rWithDate(scheduledDate: NSDate, imageData: NSData){
+    func saveL8rWithDate(scheduledDate: NSDate, imageData: NSData, position: CGPoint){
         
         dispatch_async(dispatch_get_main_queue(), {   ()->Void in
             
@@ -371,7 +386,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
             l8rItem.imageData = imageData
             l8rItem.dueDate = scheduledDate
             l8rItem.text = self.l8rText
-            l8rItem.textPosition = NSStringFromCGPoint(self.textView.center)
+            l8rItem.textPosition = NSStringFromCGPoint(position)
             
             println(l8rItem)
             
@@ -398,20 +413,36 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         extraL8rsContainerView = UIView(frame: self.view.frame)
         self.view.addSubview(extraL8rsContainerView)
         
-        var buttonYPos:CGFloat = 100
+        var buttonXPos:CGFloat = self.view.frame.midX - 150
+        //var buttonImage = ["dateImage", "placeImage", "personImage"]
     
-        for buttonTitle in ["Date", "Place", "Person"]{
-            buttonYPos = buttonYPos + 100
-            let button = UIButton(frame: CGRectMake(60, buttonYPos, extraL8rsContainerView.frame.width, 60))
-            button.setTitle(buttonTitle, forState: .Normal)
+        for buttonImage in ["placeImage"]{//, "placeImage", "personImage"]{
+  
+            let button = UIButton(frame: CGRectMake(self.view.frame.midX-100, self.view.frame.height, 200, 200))
+            //button.setTitle(buttonTitle, forState: .Normal)
+            button.setImage(UIImage(named: buttonImage), forState: UIControlState.Normal)
             button.titleLabel?.font = UIFont(name: "Arial-BoldMT", size: 32)
             button.addTarget(self, action: Selector("extraL8rPressed:"), forControlEvents: .TouchUpInside)
             button.titleLabel!.layer.shadowColor = UIColor.blackColor().CGColor
             button.titleLabel!.layer.shadowOffset = CGSizeMake(0, 1)
             button.titleLabel!.layer.shadowOpacity = 1
             button.titleLabel!.layer.shadowRadius = 1
+            button.transform = CGAffineTransformMakeScale(0,0)
+            button.alpha = 0
             extraL8rsContainerView.addSubview(button)
+            buttonXPos = buttonXPos + 100
+            
+            UIView.animateKeyframesWithDuration(0.3, delay: 0, options: nil, animations: { () -> Void in
+                button.alpha = 1
+                button.center = self.view.center
+                button.transform = CGAffineTransformMakeScale(1.0,1.0)
+            }, completion: nil)
         }
+    }
+    
+    func hideExtraL8rOptions(){
+        self.extraL8rsContainerView.subviews.map({ $0.removeFromSuperview() })
+        extraL8rsContainerView.removeFromSuperview()
     }
     
     
@@ -427,6 +458,12 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
             flashConfirm.alpha = 0
             flashConfirm.frame = CGRectMake(self.view.frame.midX, self.view.frame.midY, 0, 0)
             }, completion: nil)
+    }
+    
+    func extraL8rPressed(sender: UIButton){
+        self.flashConfirm()
+        self.hideExtraL8rOptions()
+        self.refreshCameraView()
     }
     
     func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {
@@ -446,6 +483,8 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
                 
                 pan = UIPanGestureRecognizer(target: self, action: Selector("handleTextViewPan:"))
                 textView.addGestureRecognizer(pan!)
+                
+                println("new frame:\(textView.frame)")
             }
             else {
                 textView.frame = self.view.frame

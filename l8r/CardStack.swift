@@ -97,7 +97,7 @@ class GestureView : UIView, UIGestureRecognizerDelegate {
 ///superclass for the views that will display the actual cards.
 ///The cardId property is used to identify the card when the delegate gets
 ///a callback with the card information
-public class Card : UIImageView {
+public class Card : UIView {
     var cardId: String? = nil
     
     public override init(frame: CGRect) {
