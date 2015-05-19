@@ -413,12 +413,11 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         extraL8rsContainerView = UIView(frame: self.view.frame)
         self.view.addSubview(extraL8rsContainerView)
         
-        var buttonXPos:CGFloat = self.view.frame.midX - 150
         //var buttonImage = ["dateImage", "placeImage", "personImage"]
     
-        for buttonImage in ["placeImage"]{//, "placeImage", "personImage"]{
+        for buttonImage in ["calendarImage"]{//, "placeImage", "personImage"]{
   
-            let button = UIButton(frame: CGRectMake(self.view.frame.midX-100, self.view.frame.height, 200, 200))
+            let button = UIButton(frame: CGRectMake(self.view.frame.midX-42, self.view.frame.height, 85, 93))
             //button.setTitle(buttonTitle, forState: .Normal)
             button.setImage(UIImage(named: buttonImage), forState: UIControlState.Normal)
             button.titleLabel?.font = UIFont(name: "Arial-BoldMT", size: 32)
@@ -430,7 +429,6 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
             button.transform = CGAffineTransformMakeScale(0,0)
             button.alpha = 0
             extraL8rsContainerView.addSubview(button)
-            buttonXPos = buttonXPos + 100
             
             UIView.animateKeyframesWithDuration(0.3, delay: 0, options: nil, animations: { () -> Void in
                 button.alpha = 1
