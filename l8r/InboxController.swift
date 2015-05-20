@@ -339,8 +339,10 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         println("text of currentL8R is \(currentL8R.text)")
         if currentL8R?.text == "o" {
             println("its a movie")
-            actionButtonTitle.setTitle("🎬", forState: .Normal)
-            actionButtonTitle.setNeedsDisplay()
+            
+            //TODO: Why is this super duper slow
+            actionButtonTitle.enabled = true
+            actionButtonTitle.setTitle("🎬", forState: UIControlState.Normal)
 
         }
         else {
