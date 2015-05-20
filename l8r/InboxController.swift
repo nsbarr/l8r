@@ -18,6 +18,7 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
     @IBOutlet weak var cardStackView:CardStack!
     
     var actionButton: UIButton!
+    var actionButtonTitle: UIButton!
     var shareButton: UIButton!
     var snapButton: UIButton!
     var backButton: UIButton!
@@ -139,6 +140,8 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
             println("Could not fetch \(error), \(error!.userInfo)")
         }
         
+        //this should be cued off "bottom card is showing" not # of l8rs
+        
         if l8rsById.count == 0 {
             snapButton.hidden = true
             shareButton.hidden = true
@@ -149,13 +152,7 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
             shareButton.hidden = false
             actionButton.hidden = false
         }
-        println(currentL8R?.text)
-        if currentL8R?.text == "Mad Max" {
-            actionButton.setTitle("🎬", forState: .Normal)
-        }
-        else {
-            actionButton.setTitle("", forState: .Normal)
-        }
+
     }
 
 
@@ -201,20 +198,19 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         cardStackView.addSubview(actionButton)
         
         
-        let actionButtonTitle = UIButton(frame: actionButton.frame)
-        actionButtonTitle.setTitle("🎬", forState: .Normal)
+        actionButtonTitle = UIButton(frame: actionButton.frame)
+        actionButtonTitle.setTitle("", forState: .Normal)
         actionButtonTitle.addTarget(self, action: Selector("openActionSheet:"), forControlEvents: .TouchUpInside)
-        actionButtonTitle.titleLabel?.font = UIFont(name: "Arial-BoldMT", size: 32)
+        actionButtonTitle.titleLabel!.font = UIFont(name: "Arial-BoldMT", size: 32)
         actionButtonTitle.titleLabel!.layer.shadowColor = UIColor.blackColor().CGColor
         actionButtonTitle.titleLabel!.layer.shadowOffset = CGSizeMake(0, 1)
         actionButtonTitle.titleLabel!.layer.shadowOpacity = 1
         actionButtonTitle.titleLabel!.layer.shadowRadius = 1
         actionButton.addSubview(actionButtonTitle)
-
         actionButtonTitle.center = actionButton.convertPoint(actionButton.center, fromView: actionButton.superview)
+     //   actionButtonTitle.center = actionButton.center
+     //   cardStackView.addSubview(actionButtonTitle)
 
-        
-        actionButton.enabled = true
     }
     
     func addShareButton(){
@@ -341,6 +337,18 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
     
     func cardMovedToTop(card: Card) {
         println("text of currentL8R is \(currentL8R.text)")
+        if currentL8R?.text == "o" {
+            println("its a movie")
+            actionButtonTitle.setTitle("🎬", forState: .Normal)
+            actionButtonTitle.setNeedsDisplay()
+
+        }
+        else {
+            println("it's not a movie")
+            actionButtonTitle.setTitle("❔", forState: .Normal)
+
+        }
+
     }
     
     func dismissTopCard(){
