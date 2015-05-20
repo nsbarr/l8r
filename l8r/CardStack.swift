@@ -77,6 +77,10 @@ class GestureView : UIView, UIGestureRecognizerDelegate {
     
     
     internal func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldReceiveTouch touch: UITouch) -> Bool {
+        
+
+
+        
         if (gestureRecognizer == self.panGestureRecognizer || gestureRecognizer == self.swipeGestureRecognizer) {
             return true
         }
@@ -138,17 +142,17 @@ public class CardStack : UIView {
     public var delegate: CardStackDelegate? = nil
     public var noMoreCardsView: UIView = {
         //default 'noMoreCards' View
-        let noMoreCards: UIView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 200))
+        
+        let screenRect = UIScreen.mainScreen().bounds
+
+        let noMoreCards: UIView = UIView(frame: CGRect(x: 0, y: 0, width:screenRect.size.width, height: screenRect.size.height))
         //  noMoreCards.backgroundColor = UIColor.whiteColor()
         //  noMoreCards.backgroundColor = UIColor.lightGrayColor()
         
-        let label: UILabel = UILabel(frame: noMoreCards.frame)
-        label.text = "No more cards!"
-        label.textColor = UIColor.redColor()
-        label.textAlignment = NSTextAlignment.Center
-        
         let sparseView = UIImageView(frame: noMoreCards.frame)
         sparseView.image = UIImage(named: "sparseImage")
+        sparseView.contentMode = UIViewContentMode.ScaleAspectFill
+        sparseView.clipsToBounds = false
         noMoreCards.addSubview(sparseView)
         
         
@@ -474,7 +478,8 @@ public class CardStack : UIView {
     func setCardToView(cardIndex: Int, view: UIView) {
         if let delegate = self.delegate {
             println("setting card \(cardIndex)")
-            assert(view.subviews.count == 0, "view for adding card has subviews!")
+            //TODO: - re-add this assert. Doesn't work with PageController
+            //     assert(view.subviews.count == 0, "view for adding card has subviews!")
             let card = delegate.cardAtIndex(cardIndex, frame: view.frame)
             card.tag = self.cardTag
             card.layer.cornerRadius = CGFloat(8)

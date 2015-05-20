@@ -33,20 +33,26 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
     var extraL8rsContainerView: UIView!
     var imageContainerView: UIView!
     var inboxButton: UIButton!
+    var inboxButtonFill: UIButton!
     
 
     //text setup
     var textView: UITextView!
     var l8rText = String()
     var pan: UIPanGestureRecognizer?
+    var textPosition: CGPoint!
+    
+    //core data setup
+    var appDelegate: AppDelegate!
+    var managedContext: NSManagedObjectContext!
+    var l8rsById:[String:L8RItem]!
+
 
 
     
     //image setup
     var snapshotImage: UIImage!
     
-    //coreData setup
-    var managedContext: NSManagedObjectContext!
 
 
     //MARK: - View Lifecycle
@@ -59,6 +65,18 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         self.addFlipButton()
         self.addSnapButton()
         self.addInboxButton()
+
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(false)
+        self.setUpCoreData()
+        self.fetchL8rs()
+    }
+    
+    func setUpCoreData(){
+        appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        managedContext = appDelegate.managedObjectContext!
     }
     
     func setUpCamera(){
@@ -104,6 +122,51 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         
     }
     
+    func fetchL8rs(){
+        
+        let fetchRequest = NSFetchRequest(entityName: "L8RItem")
+        var error: NSError?
+        
+        let fetchedResults = managedContext.executeFetchRequest(fetchRequest, error: &error) as! [NSManagedObject]?
+        let currentDate = NSDate()
+        
+        self.l8rsById = [String:L8RItem]()
+        
+        if let results = fetchedResults {
+            for anItem in results {
+                if let l8rItem = anItem as? L8RItem {
+                    //TODO: Diego doesn't like this
+                    println("checking item at date  \(l8rItem.dueDate)")
+                    if currentDate.compare(l8rItem.dueDate!) == NSComparisonResult.OrderedDescending {
+                        l8rsById[l8rItem.objectIDString] = l8rItem
+                    }
+                }
+                else {
+                    let cname = NSStringFromClass(anItem.dynamicType)
+                    NSLog("item is not a L8R! class name is \(cname)")
+                }
+                
+            }
+        }
+        else {
+            println("Could not fetch \(error), \(error!.userInfo)")
+        }
+        
+        if l8rsById.count > 0 {
+            UIView.animateWithDuration(1.0, animations: { () -> Void in
+                self.inboxButtonFill.alpha = 1
+            })
+        }
+        else {
+            UIView.animateWithDuration(0.6, animations: { () -> Void in
+                self.inboxButtonFill.alpha = 0
+            })
+
+        }
+    }
+    
+
+    
     func addSnapButton(){
         snapButton = UIButton(frame: CGRect(x: 0, y: view.frame.height-120, width: 100, height: 100))
         snapButton.center.x = view.center.x
@@ -134,6 +197,15 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         inboxButton.setImage(inboxButtonImage, forState: .Normal)
         inboxButton.alpha = 1
         view.addSubview(inboxButton)
+        
+        inboxButtonFill = UIButton(frame: CGRectMake(self.view.frame.width-(20+30),self.view.frame.height-60, 30, 30))
+        inboxButtonFill.addTarget(self, action: Selector("swipeToInbox"), forControlEvents:UIControlEvents.TouchUpInside)
+        let inboxButtonFillImage = UIImage(named: "inboxFillImage")
+        inboxButtonFill.setImage(inboxButtonFillImage, forState: .Normal)
+        inboxButtonFill.alpha = 0
+        view.addSubview(inboxButtonFill)
+        
+        
     
     }
     
@@ -223,6 +295,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         textView.text = ""
         textView.frame = self.view.frame
         textView.frame.origin.y = self.view.frame.midY-100
+        textPosition = self.view.center
         
         if pan != nil {
             textView.removeGestureRecognizer(pan!)
@@ -264,6 +337,8 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
     //    textView.layer.borderColor = UIColor.redColor().CGColor
     //    textView.layer.borderWidth = 2.0
         textView.clipsToBounds = true
+        
+        textPosition = self.view.center
         self.view.addSubview(textView)
         
     }
@@ -274,6 +349,9 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         viewToPan!.center = CGPointMake(viewToPan!.center.x + translation.x, viewToPan!.center.y + translation.y)
         sender.setTranslation(CGPointZero, inView: self.view)
         println(textView.center)
+        if sender.state == .Ended {
+            textPosition = textView.center
+        }
     }
     
     
@@ -352,12 +430,11 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
                             timeComponent.second = 1
                             scheduledDate = theCalendar.dateByAddingComponents(timeComponent, toDate: currentTime, options: NSCalendarOptions(0))
                             
-                            let textViewPosition = self.textView.center
+                            let textViewPosition = self.textPosition
                         
                             self.saveL8rWithDate(scheduledDate, imageData:imageData, position:textViewPosition)
 
-                            self.flashConfirm()
-                            self.refreshCameraView()
+                            
                         }
                         else {
                             println("kind of class is \(sender)")
@@ -369,6 +446,9 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
                     NSLog("error while capturing still image: \(error)")
                 }
             }
+        }
+        if sender.isKindOfClass(UITapGestureRecognizer){
+            self.flashConfirm()
         }
     }
     
@@ -387,6 +467,9 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
             l8rItem.dueDate = scheduledDate
             l8rItem.text = self.l8rText
             l8rItem.textPosition = NSStringFromCGPoint(position)
+            self.l8rText = ""
+            self.textPosition = self.textView.center
+
             
             println(l8rItem)
             
@@ -449,19 +532,25 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         flashConfirm.center = self.view.center
         flashConfirm.image = UIImage(named: "flashConfirmImage")
         flashConfirm.contentMode = UIViewContentMode.ScaleAspectFit
-        flashConfirm.alpha = 1
+        flashConfirm.alpha = 0
         self.view.addSubview(flashConfirm)
         
-        UIView.animateKeyframesWithDuration(0.5, delay: 0.3, options: nil, animations: { () -> Void in
-            flashConfirm.alpha = 0
-            flashConfirm.frame = CGRectMake(self.view.frame.midX, self.view.frame.midY, 0, 0)
-            }, completion: nil)
+        UIView.animateKeyframesWithDuration(0.2, delay: 0.2, options: nil, animations: { () -> Void in
+            flashConfirm.alpha = 1
+          //  flashConfirm.frame = CGRectMake(self.view.frame.midX, self.view.frame.midY, 0, 0)
+            }, completion: {finished in
+                UIView.animateKeyframesWithDuration(0.2, delay: 0.2, options: nil, animations: { () -> Void in
+                    flashConfirm.alpha = 0
+                }, completion: nil)
+                self.refreshCameraView()
+        })
+        
+
     }
     
     func extraL8rPressed(sender: UIButton){
         self.flashConfirm()
         self.hideExtraL8rOptions()
-        self.refreshCameraView()
     }
     
     func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {
@@ -490,6 +579,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
             }
             
             textView.resignFirstResponder()
+            textPosition = textView.center
             return false
         }
         return true

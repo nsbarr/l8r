@@ -17,9 +17,10 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
     
     @IBOutlet weak var cardStackView:CardStack!
     
-    var dismissButton: UIButton!
+    var actionButton: UIButton!
     var shareButton: UIButton!
     var snapButton: UIButton!
+    var backButton: UIButton!
     var containerView: UIView!
 
 
@@ -59,11 +60,14 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         println("inbox")
         super.viewDidLoad()
         self.setUpCoreData()
-        self.fetchL8rs()
 
         self.addSnapButton()
-        self.addDismissButton()
+        self.addBackButton()
+        self.addActionButton()
         self.addShareButton()
+        
+        self.fetchL8rs()
+
     }
     
     
@@ -89,6 +93,21 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         return true
     }
     
+    func addBackButton(){
+        backButton = UIButton(frame: CGRectMake(10, 20, 40, 40))
+        backButton.setImage(UIImage(named: "backButtonImage"), forState: .Normal)
+        backButton.addTarget(self, action: Selector("backToCamera:"), forControlEvents: .TouchUpInside)
+        view.addSubview(backButton)
+    }
+    
+    func backToCamera(sender: UIButton){
+        let pvc = self.parentViewController as! UIPageViewController
+        
+        let appDelegate  = UIApplication.sharedApplication().delegate as! AppDelegate
+        let viewController = appDelegate.window!.rootViewController as! ViewController
+        let cc = viewController.viewControllerAtIndex(1)
+        pvc.setViewControllers([cc], direction: UIPageViewControllerNavigationDirection.Reverse, animated: true, completion: nil)
+    }
     
     func fetchL8rs(){
         
@@ -119,13 +138,27 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         else {
             println("Could not fetch \(error), \(error!.userInfo)")
         }
+        
+        if l8rsById.count == 0 {
+            snapButton.hidden = true
+        }
+        else {
+            snapButton.hidden = false
+        }
+        println(currentL8R?.text)
+        if currentL8R?.text == "Mad Max" {
+            actionButton.setTitle("🎬", forState: .Normal)
+        }
+        else {
+            actionButton.setTitle("", forState: .Normal)
+        }
     }
 
 
     func updateButtonFrames() {
         self.snapButton.frame = CGRect(x: 0, y: view.frame.height-130, width: 100, height: 100)
         snapButton.center.x = view.center.x
-        self.dismissButton.frame = CGRect(x: 40, y: view.frame.height-130, width: 60, height: 60)
+        self.actionButton.frame = CGRect(x: 40, y: view.frame.height-130, width: 60, height: 60)
         self.shareButton.frame = CGRect(x: view.frame.width-100, y: view.frame.height-130, width: 60, height: 60)
     }
     
@@ -149,13 +182,19 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         cardStackView.addSubview(snapButton)
     }
     
-    func addDismissButton(){
-        dismissButton = UIButton(frame: CGRect(x: 28, y: view.frame.height-130, width: 60, height: 60))
-        let buttonImage = UIImage(named: "dismissButton")
-        dismissButton.center.x = snapButton.center.x-100
-        dismissButton.setImage(buttonImage, forState: .Normal)
-        dismissButton.addTarget(self, action: Selector("dismissTopCard"), forControlEvents: .TouchUpInside)
-        cardStackView.addSubview(dismissButton)
+    
+    func addActionButton(){
+        actionButton = UIButton(frame: CGRect(x: 28, y: view.frame.height-130, width: 60, height: 60))
+        actionButton.center.x = snapButton.center.x-100
+        actionButton.setTitle("", forState: .Normal)
+        actionButton.addTarget(self, action: Selector("openActionSheet:"), forControlEvents: .TouchUpInside)
+        actionButton.titleLabel?.font = UIFont(name: "Arial-BoldMT", size: 40)
+        actionButton.titleLabel!.layer.shadowColor = UIColor.blackColor().CGColor
+        actionButton.titleLabel!.layer.shadowOffset = CGSizeMake(0, 1)
+        actionButton.titleLabel!.layer.shadowOpacity = 1
+        actionButton.titleLabel!.layer.shadowRadius = 1
+        cardStackView.addSubview(actionButton)
+        actionButton.enabled = true
     }
     
     func addShareButton(){
@@ -166,6 +205,7 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         shareButton.addTarget(self, action: Selector("openShareSheet:"), forControlEvents: .TouchUpInside)
         cardStackView.addSubview(shareButton)
     }
+    
     
     func l8rButtonTapped(sender: UITapGestureRecognizer){
         self.respondToGesture(sender)
@@ -281,6 +321,7 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
     
     func dismissTopCard(){
         self.cardStackView.swipeOutTopCardWithSpeed(1.0)
+
     }
     
     func inboxButtonPressed(sender:UIButton){
@@ -311,8 +352,7 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         println("The card \(card.cardId!) was removed!")
         
         if let cardToRemove = self.currentL8R as L8RItem? {
-            
-            
+        
             dispatch_async(dispatch_get_main_queue(), {   ()->Void in
                 
                 self.managedContext.deleteObject(cardToRemove)
@@ -375,7 +415,19 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         
         card.clipsToBounds = true
         
+        
         return card
+    }
+    
+    func openActionSheet(sender: UIButton){
+        println("opening smart do")
+        println("label is \(sender.titleLabel)")
+        if sender.titleLabel?.text == "🎬"{
+            println("opening movie")
+
+            UIApplication.sharedApplication().openURL(NSURL(string:"http://www.fandango.com/pavilionparkslope_aaefw/theaterpage")!)
+            
+        }
     }
     
     func addTextViewWithText(text:String, position:String) -> UITextView{
