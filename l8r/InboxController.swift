@@ -141,9 +141,13 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         
         if l8rsById.count == 0 {
             snapButton.hidden = true
+            shareButton.hidden = true
+            actionButton.hidden = true
         }
         else {
             snapButton.hidden = false
+            shareButton.hidden = false
+            actionButton.hidden = false
         }
         println(currentL8R?.text)
         if currentL8R?.text == "Mad Max" {
@@ -156,17 +160,17 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
 
 
     func updateButtonFrames() {
-        self.snapButton.frame = CGRect(x: 0, y: view.frame.height-130, width: 100, height: 100)
-        snapButton.center.x = view.center.x
-        self.actionButton.frame = CGRect(x: 40, y: view.frame.height-130, width: 60, height: 60)
-        self.shareButton.frame = CGRect(x: view.frame.width-100, y: view.frame.height-130, width: 60, height: 60)
+        self.snapButton.frame = CGRect(x: 0, y: view.frame.height-90, width: 60, height: 60)
+        snapButton.center.x = view.center.x-40
+        self.actionButton.frame = CGRect(x: snapButton.center.x+60, y: snapButton.frame.origin.y, width: 60, height: 60)
+        self.shareButton.frame = CGRect(x: actionButton.center.x+60, y: snapButton.frame.origin.y, width: 60, height: 60)
     }
     
     func addSnapButton(){
-        snapButton = UIButton(frame: CGRect(x: 0, y: view.frame.height-120, width: 100, height: 100))
+        snapButton = UIButton(frame: CGRect(x: 0, y: view.frame.height-64, width: 60, height: 60))
         snapButton.center.x = view.center.x
         snapButton.tag = 0
-        let buttonImage = UIImage(named: "snapButtonImage")
+        let buttonImage = UIImage(named: "inboxSnapButtonImage")
         snapButton.setImage(buttonImage, forState: .Normal)
         snapButton.hidden = false
         
@@ -184,9 +188,10 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
     
     
     func addActionButton(){
-        actionButton = UIButton(frame: CGRect(x: 28, y: view.frame.height-130, width: 60, height: 60))
-        actionButton.center.x = snapButton.center.x-100
+        actionButton = UIButton(frame: CGRect(x: 28, y: view.frame.height-64, width: 60, height: 60))
+        actionButton.center.x = snapButton.center.x+100
         actionButton.setTitle("", forState: .Normal)
+        actionButton.setImage(UIImage(named: "actionButtonImage"), forState: .Normal)
         actionButton.addTarget(self, action: Selector("openActionSheet:"), forControlEvents: .TouchUpInside)
         actionButton.titleLabel?.font = UIFont(name: "Arial-BoldMT", size: 40)
         actionButton.titleLabel!.layer.shadowColor = UIColor.blackColor().CGColor
@@ -194,12 +199,27 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         actionButton.titleLabel!.layer.shadowOpacity = 1
         actionButton.titleLabel!.layer.shadowRadius = 1
         cardStackView.addSubview(actionButton)
+        
+        
+        let actionButtonTitle = UIButton(frame: actionButton.frame)
+        actionButtonTitle.setTitle("🎬", forState: .Normal)
+        actionButtonTitle.addTarget(self, action: Selector("openActionSheet:"), forControlEvents: .TouchUpInside)
+        actionButtonTitle.titleLabel?.font = UIFont(name: "Arial-BoldMT", size: 32)
+        actionButtonTitle.titleLabel!.layer.shadowColor = UIColor.blackColor().CGColor
+        actionButtonTitle.titleLabel!.layer.shadowOffset = CGSizeMake(0, 1)
+        actionButtonTitle.titleLabel!.layer.shadowOpacity = 1
+        actionButtonTitle.titleLabel!.layer.shadowRadius = 1
+        actionButton.addSubview(actionButtonTitle)
+
+        actionButtonTitle.center = actionButton.convertPoint(actionButton.center, fromView: actionButton.superview)
+
+        
         actionButton.enabled = true
     }
     
     func addShareButton(){
         shareButton = UIButton(frame: CGRect(x: view.frame.width-80, y: view.frame.height-130, width: 60, height: 60))
-        let buttonImage = UIImage(named: "shareButton")
+        let buttonImage = UIImage(named: "shareButtonImage")
         shareButton.center.x = snapButton.center.x+100
         shareButton.setImage(buttonImage, forState: .Normal)
         shareButton.addTarget(self, action: Selector("openShareSheet:"), forControlEvents: .TouchUpInside)
@@ -318,6 +338,10 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
     }
     
     //MARK: - Actions
+    
+    func cardMovedToTop(card: Card) {
+        println("text of currentL8R is \(currentL8R.text)")
+    }
     
     func dismissTopCard(){
         self.cardStackView.swipeOutTopCardWithSpeed(1.0)

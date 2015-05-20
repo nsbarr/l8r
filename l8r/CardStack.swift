@@ -120,6 +120,8 @@ public protocol CardStackDelegate {
     func cardAtIndex(index: Int, frame: CGRect) -> Card
     
     func cardRemoved(card: Card)
+    
+    func cardMovedToTop(card: Card)
 }
 
 public class CardStack : UIView {
@@ -152,7 +154,7 @@ public class CardStack : UIView {
         let sparseView = UIImageView(frame: noMoreCards.frame)
         sparseView.image = UIImage(named: "sparseImage")
         sparseView.contentMode = UIViewContentMode.ScaleAspectFill
-        sparseView.clipsToBounds = false
+        sparseView.clipsToBounds = true
         noMoreCards.addSubview(sparseView)
         
         
@@ -521,7 +523,6 @@ public class CardStack : UIView {
                             
                             println("New index of top card \(self.indexOfTopCard)")
                             
-                            
                             if (wasAtLastCard) {
                                 //if we just removed the last card simply hide the topview and return it to center
                                 //the hiddenview should have been hidden in the previous step
@@ -570,6 +571,7 @@ public class CardStack : UIView {
                                 if let newTopCard = newTopView.viewWithTag(self.cardTag) as? Card {
                                     println("setting new topCard")
                                     self.topCard = newTopCard
+                                    self.delegate?.cardMovedToTop(newTopCard)
                                 }
                                 else {
                                     println("no card to make new top card!")

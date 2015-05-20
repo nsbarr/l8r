@@ -40,7 +40,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
     var textView: UITextView!
     var l8rText = String()
     var pan: UIPanGestureRecognizer?
-    var textPosition: CGPoint!
+    var textViewPosition: CGPoint!
     
     //core data setup
     var appDelegate: AppDelegate!
@@ -293,9 +293,8 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         
         self.previewLayer?.connection.enabled = true
         textView.text = ""
-        textView.frame = self.view.frame
+        textView.frame = CGRectMake(0,100,self.view.frame.width, 300)
         textView.frame.origin.y = self.view.frame.midY-100
-        textPosition = self.view.center
         
         if pan != nil {
             textView.removeGestureRecognizer(pan!)
@@ -304,7 +303,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
     
     func addTextView(){
         
-        textView = UITextView(frame: self.view.frame)
+        textView = UITextView(frame: CGRectMake(0,100,self.view.frame.width, 300))
         textView.backgroundColor = UIColor.clearColor()
         textView.returnKeyType = UIReturnKeyType.Done
         textView.delegate = self
@@ -333,12 +332,13 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         
         //TODO: Maybe contentOffset is better here.
         
-        textView.frame.origin.y = self.view.frame.midY-100
     //    textView.layer.borderColor = UIColor.redColor().CGColor
     //    textView.layer.borderWidth = 2.0
         textView.clipsToBounds = true
+        textView.frame.origin.y = self.view.frame.midY-100
+        textViewPosition = textView.center
         
-        textPosition = self.view.center
+        
         self.view.addSubview(textView)
         
     }
@@ -349,9 +349,11 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         viewToPan!.center = CGPointMake(viewToPan!.center.x + translation.x, viewToPan!.center.y + translation.y)
         sender.setTranslation(CGPointZero, inView: self.view)
         println(textView.center)
+        
         if sender.state == .Ended {
-            textPosition = textView.center
+            self.textViewPosition = textView.center
         }
+
     }
     
     
@@ -430,9 +432,9 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
                             timeComponent.second = 1
                             scheduledDate = theCalendar.dateByAddingComponents(timeComponent, toDate: currentTime, options: NSCalendarOptions(0))
                             
-                            let textViewPosition = self.textPosition
+                            let position = self.textViewPosition
                         
-                            self.saveL8rWithDate(scheduledDate, imageData:imageData, position:textViewPosition)
+                            self.saveL8rWithDate(scheduledDate, imageData:imageData, position:position)
 
                             
                         }
@@ -468,8 +470,6 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
             l8rItem.text = self.l8rText
             l8rItem.textPosition = NSStringFromCGPoint(position)
             self.l8rText = ""
-            self.textPosition = self.textView.center
-
             
             println(l8rItem)
             
@@ -577,9 +577,9 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
                 textView.frame = self.view.frame
                 textView.frame.origin.y = self.view.frame.midY-100
             }
-            
+            self.textViewPosition = textView.center
+            println(self.textViewPosition)
             textView.resignFirstResponder()
-            textPosition = textView.center
             return false
         }
         return true
