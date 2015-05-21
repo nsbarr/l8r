@@ -264,15 +264,22 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         else if sender.isKindOfClass(UITapGestureRecognizer){
             println("tap")
             
+            //tomorrow at 9am
             var scheduledDate: NSDate!
             var theCalendar = NSCalendar.currentCalendar()
             let currentTime = NSDate()
-            let tomorrowComponent = NSDateComponents()
-            tomorrowComponent.day = 1
-            let tomorrow = theCalendar.dateByAddingComponents(tomorrowComponent, toDate: currentTime, options: NSCalendarOptions(0))
-            let tomorrowAt9AmComponents = theCalendar.components(NSCalendarUnit.CalendarUnitCalendar|NSCalendarUnit.CalendarUnitYear|NSCalendarUnit.CalendarUnitMonth|NSCalendarUnit.CalendarUnitDay, fromDate: tomorrow!)
-            tomorrowAt9AmComponents.hour = 9
-            scheduledDate = theCalendar.dateFromComponents(tomorrowAt9AmComponents)
+//            let tomorrowComponent = NSDateComponents()
+//            tomorrowComponent.day = 1
+//            let tomorrow = theCalendar.dateByAddingComponents(tomorrowComponent, toDate: currentTime, options: NSCalendarOptions(0))
+//            let tomorrowAt9AmComponents = theCalendar.components(NSCalendarUnit.CalendarUnitCalendar|NSCalendarUnit.CalendarUnitYear|NSCalendarUnit.CalendarUnitMonth|NSCalendarUnit.CalendarUnitDay, fromDate: tomorrow!)
+//            tomorrowAt9AmComponents.hour = 9
+//            scheduledDate = theCalendar.dateFromComponents(tomorrowAt9AmComponents)
+            
+            //in a minute (for testing)
+            let timeComponent = NSDateComponents()
+            timeComponent.minute = 1
+            scheduledDate = theCalendar.dateByAddingComponents(timeComponent, toDate: currentTime, options: NSCalendarOptions(0))
+            
             
             self.updateL8rWithDate(scheduledDate)
             self.flashConfirm()
@@ -336,21 +343,24 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
     //MARK: - Actions
     
     func cardMovedToTop(card: Card) {
-        println("text of currentL8R is \(currentL8R.text)")
-        if currentL8R?.text == "o" {
-            println("its a movie")
-            
-            //TODO: Why is this super duper slow
-            actionButtonTitle.enabled = true
-            actionButtonTitle.setTitle("🎬", forState: UIControlState.Normal)
+        
+        dispatch_async(dispatch_get_main_queue(), {   ()->Void in
+        
+            println("text of currentL8R is \(self.currentL8R.text)")
+            if self.currentL8R?.text == "Mad Max" {
+                println("its a movie")
+                
+                //TODO: Why is this super duper slow
+                self.actionButtonTitle.enabled = true
+                self.actionButtonTitle.setTitle("🎬", forState: UIControlState.Normal)
 
-        }
-        else {
-            println("it's not a movie")
-            actionButtonTitle.setTitle("❔", forState: .Normal)
+            }
+            else {
+                println("it's not a movie")
+                self.actionButtonTitle.setTitle("❔", forState: .Normal)
 
-        }
-
+            }
+        })
     }
     
     func dismissTopCard(){

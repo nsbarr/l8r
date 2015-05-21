@@ -34,6 +34,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
     var imageContainerView: UIView!
     var inboxButton: UIButton!
     var inboxButtonFill: UIButton!
+    var datePicker: UIDatePicker!
     
 
     //text setup
@@ -369,7 +370,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         }
     }
     
-    func takeScreenSnapshotFromGesture(sender: UIGestureRecognizer){
+    func takeScreenSnapshotFromGesture(sender: AnyObject){
         dispatch_async(sessionQueue) { () -> Void in
             
             let connection = self.stillCameraOutput.connectionWithMediaType(AVMediaTypeVideo)
@@ -416,7 +417,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
                             var scheduledDate: NSDate!
                             var theCalendar = NSCalendar.currentCalendar()
                             let currentTime = NSDate()
-                            
+                        
                             
 //                            //tomorrow at 9am
 //                            let tomorrowComponent = NSDateComponents()
@@ -427,7 +428,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
 //                            scheduledDate = theCalendar.dateFromComponents(tomorrowAt9AmComponents)
                             
                             
-                            //in a second (for testing)
+                            //in a minute (for testing)
                             let timeComponent = NSDateComponents()
                             timeComponent.second = 1
                             scheduledDate = theCalendar.dateByAddingComponents(timeComponent, toDate: currentTime, options: NSCalendarOptions(0))
@@ -435,11 +436,29 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
                             let position = self.textViewPosition
                         
                             self.saveL8rWithDate(scheduledDate, imageData:imageData, position:position)
+                            
+                            self.flashConfirm()
 
                             
                         }
+                        
+                        else if sender is UIButton {
+                            println("Received from Date Picker")
+                            
+                            let scheduledDate = self.datePicker.date
+                            let position = self.textViewPosition
+                            self.saveL8rWithDate(scheduledDate, imageData:imageData, position:position)
+                            let viewToDisappear = sender.superview!
+                            viewToDisappear!.subviews.map({ $0.removeFromSuperview() })
+                            viewToDisappear?.removeFromSuperview()
+                            
+                            self.flashConfirm()
+
+                        }
+                        
                         else {
                             println("kind of class is \(sender)")
+
                         }
                     }
                 }
@@ -448,9 +467,6 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
                     NSLog("error while capturing still image: \(error)")
                 }
             }
-        }
-        if sender.isKindOfClass(UITapGestureRecognizer){
-            self.flashConfirm()
         }
     }
     
@@ -511,6 +527,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
             button.titleLabel!.layer.shadowRadius = 1
             button.transform = CGAffineTransformMakeScale(0,0)
             button.alpha = 0
+            button.tag = 2
             extraL8rsContainerView.addSubview(button)
             
             UIView.animateKeyframesWithDuration(0.3, delay: 0, options: nil, animations: { () -> Void in
@@ -549,8 +566,30 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
     }
     
     func extraL8rPressed(sender: UIButton){
-        self.flashConfirm()
-        self.hideExtraL8rOptions()
+        
+        if sender.tag == 2 {
+            self.showDatePicker()
+        }
+        
+    }
+    
+    func showDatePicker(){
+        
+        var datePickerView = UIVisualEffectView(effect: UIBlurEffect(style: .Light))
+        datePickerView.frame = self.view.frame
+        self.view.addSubview(datePickerView)
+        
+        datePicker = UIDatePicker(frame: self.view.frame)
+        datePicker.center.y = self.view.center.y
+        datePickerView.addSubview(datePicker)
+        
+        let confirmButton = UIButton(frame: CGRectMake(0, 200, 100, 100))
+        confirmButton.center.x = self.view.center.x
+        confirmButton.center.y = datePicker.frame.maxY+60
+        confirmButton.setImage(UIImage(named: "inboxSnapButtonImage"), forState: .Normal)
+        confirmButton.tag = 777
+        confirmButton.addTarget(self, action: Selector("getDatePickerDate:"), forControlEvents: .TouchUpInside)
+        datePickerView.addSubview(confirmButton)
     }
     
     func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {
