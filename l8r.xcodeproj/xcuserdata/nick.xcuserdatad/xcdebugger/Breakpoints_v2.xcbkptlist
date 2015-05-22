@@ -42,12 +42,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "l8r/CameraController.swift"
-            timestampString = "453843252.667116"
+            timestampString = "453945935.106449"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "573"
-            endingLineNumber = "573"
-            landmarkName = "textView(_:shouldChangeTextInRange:replacementText:)"
+            startingLineNumber = "581"
+            endingLineNumber = "581"
+            landmarkName = "extraL8rPressed(_:)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -74,12 +74,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "l8r/InboxController.swift"
-            timestampString = "453855534.162543"
+            timestampString = "453949640.1564"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "465"
-            endingLineNumber = "465"
-            landmarkName = "openActionSheet(_:)"
+            startingLineNumber = "510"
+            endingLineNumber = "510"
+            landmarkName = "cardAtIndex(_:frame:)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -90,12 +90,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "l8r/CameraController.swift"
-            timestampString = "453843252.667116"
+            timestampString = "453949640.1564"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "584"
-            endingLineNumber = "584"
-            landmarkName = "textView(_:shouldChangeTextInRange:replacementText:)"
+            startingLineNumber = "593"
+            endingLineNumber = "593"
+            landmarkName = "showDatePicker()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -122,12 +122,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "l8r/InboxController.swift"
-            timestampString = "453850484.966989"
+            timestampString = "453949640.1564"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "328"
-            endingLineNumber = "328"
-            landmarkName = "scheduleLocalNotificationWithDueDate(_:)"
+            startingLineNumber = "351"
+            endingLineNumber = "351"
+            landmarkName = "respondToGesture(_:)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

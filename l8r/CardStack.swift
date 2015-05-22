@@ -153,8 +153,7 @@ public class CardStack : UIView {
         
         let sparseView = UIImageView(frame: noMoreCards.frame)
         sparseView.image = UIImage(named: "sparseImage")
-        sparseView.contentMode = UIViewContentMode.ScaleAspectFill
-        sparseView.clipsToBounds = true
+        sparseView.clipsToBounds = false
         noMoreCards.addSubview(sparseView)
         
         
@@ -188,6 +187,7 @@ public class CardStack : UIView {
         self.backgroundColor = UIColor.clearColor()
         
         self.bottomView.addSubview(self.noMoreCardsView)
+        self.bottomView.clipsToBounds = true
         self.addSubview(self.bottomView)
         self.addSubview(self.hiddenView)
         self.addSubview(self.topView)
@@ -529,6 +529,7 @@ public class CardStack : UIView {
                                 println("that was the last card!")
                                 self.topView.alpha = 0
                                 self.topView.centerInSuperview()
+                                //TODO: elegantly fade out the action buttons here?
                             }
                             else {
                                 self.topView = newTopView

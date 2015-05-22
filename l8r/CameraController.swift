@@ -513,10 +513,13 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         self.view.addSubview(extraL8rsContainerView)
         
         //var buttonImage = ["dateImage", "placeImage", "personImage"]
+        var tag = [1,2,3]
+        var xPos = [60, extraL8rsContainerView.frame.midX, extraL8rsContainerView.frame.width-(60)]
+        var buttonIndex = 0
     
-        for buttonImage in ["calendarImage"]{//, "placeImage", "personImage"]{
+        for buttonImage in ["placeImage", "calendarImage", "personImage"]{
   
-            let button = UIButton(frame: CGRectMake(self.view.frame.midX-42, self.view.frame.height, 85, 93))
+            let button = UIButton(frame: CGRectMake(extraL8rsContainerView.frame.midX-42, self.view.frame.height, 85, 93))
             //button.setTitle(buttonTitle, forState: .Normal)
             button.setImage(UIImage(named: buttonImage), forState: UIControlState.Normal)
             button.titleLabel?.font = UIFont(name: "Arial-BoldMT", size: 32)
@@ -526,16 +529,20 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
             button.titleLabel!.layer.shadowOpacity = 1
             button.titleLabel!.layer.shadowRadius = 1
             button.transform = CGAffineTransformMakeScale(0,0)
-            button.alpha = 0
-            button.tag = 2
+            button.alpha = 1
+            button.tag = tag[buttonIndex]
             extraL8rsContainerView.addSubview(button)
             
             UIView.animateKeyframesWithDuration(0.3, delay: 0, options: nil, animations: { () -> Void in
                 button.alpha = 1
-                button.center = self.view.center
+                button.center.y = self.view.center.y
+                button.center.x = xPos[buttonIndex]
                 button.transform = CGAffineTransformMakeScale(1.0,1.0)
             }, completion: nil)
+        
+        buttonIndex = buttonIndex + 1
         }
+        
     }
     
     func hideExtraL8rOptions(){
@@ -568,6 +575,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
     func extraL8rPressed(sender: UIButton){
         
         if sender.tag == 2 {
+            self.hideExtraL8rOptions()
             self.showDatePicker()
         }
         
@@ -580,6 +588,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         self.view.addSubview(datePickerView)
         
         datePicker = UIDatePicker(frame: self.view.frame)
+        datePicker.minuteInterval = 30
         datePicker.center.y = self.view.center.y
         datePickerView.addSubview(datePicker)
         
@@ -588,7 +597,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         confirmButton.center.y = datePicker.frame.maxY+60
         confirmButton.setImage(UIImage(named: "inboxSnapButtonImage"), forState: .Normal)
         confirmButton.tag = 777
-        confirmButton.addTarget(self, action: Selector("getDatePickerDate:"), forControlEvents: .TouchUpInside)
+        confirmButton.addTarget(self, action: Selector("takeScreenSnapshotFromGesture:"), forControlEvents: .TouchUpInside)
         datePickerView.addSubview(confirmButton)
     }
     

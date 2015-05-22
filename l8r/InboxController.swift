@@ -23,6 +23,9 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
     var snapButton: UIButton!
     var backButton: UIButton!
     var containerView: UIView!
+    var extraL8rsContainerView: UIView!
+    var datePicker: UIDatePicker!
+
 
 
     var l8rsById:[String:L8RItem]!
@@ -189,6 +192,7 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         actionButton.center.x = snapButton.center.x+100
         actionButton.setTitle("", forState: .Normal)
         actionButton.setImage(UIImage(named: "actionButtonImage"), forState: .Normal)
+        actionButton.setImage(UIImage(named: "actionButtonImageEmpty"), forState: UIControlState.Selected)
         actionButton.addTarget(self, action: Selector("openActionSheet:"), forControlEvents: .TouchUpInside)
         actionButton.titleLabel?.font = UIFont(name: "Arial-BoldMT", size: 40)
         actionButton.titleLabel!.layer.shadowColor = UIColor.blackColor().CGColor
@@ -235,28 +239,87 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
     
     func showExtraL8rOptions(){
         
-        containerView = UIView(frame: self.view.frame)
-        self.view.addSubview(containerView)
+        extraL8rsContainerView = UIView(frame: self.view.frame)
+        self.view.addSubview(extraL8rsContainerView)
         
-        var buttonYPos:CGFloat = 100
+        //var buttonImage = ["dateImage", "placeImage", "personImage"]
+        var tag = [1,2,3]
+        var xPos = [60, extraL8rsContainerView.frame.midX, extraL8rsContainerView.frame.width-(60)]
+        var buttonIndex = 0
         
-        
-        for buttonTitle in ["Date", "Place", "Person"]{
-            buttonYPos = buttonYPos + 100
-            let button = UIButton(frame: CGRectMake(60, buttonYPos, containerView.frame.width, 60))
-            button.setTitle(buttonTitle, forState: .Normal)
-            //  flipButton.setImage(UIImage(named: "flipButton"), forState: .Normal)
+        for buttonImage in ["placeImage", "calendarImage", "personImage"]{
+            
+            let button = UIButton(frame: CGRectMake(extraL8rsContainerView.frame.midX-42, self.view.frame.height, 85, 93))
+            //button.setTitle(buttonTitle, forState: .Normal)
+            button.setImage(UIImage(named: buttonImage), forState: UIControlState.Normal)
             button.titleLabel?.font = UIFont(name: "Arial-BoldMT", size: 32)
             button.addTarget(self, action: Selector("extraL8rPressed:"), forControlEvents: .TouchUpInside)
             button.titleLabel!.layer.shadowColor = UIColor.blackColor().CGColor
             button.titleLabel!.layer.shadowOffset = CGSizeMake(0, 1)
             button.titleLabel!.layer.shadowOpacity = 1
             button.titleLabel!.layer.shadowRadius = 1
-            containerView.addSubview(button)
+            button.transform = CGAffineTransformMakeScale(0,0)
+            button.alpha = 1
+            button.tag = tag[buttonIndex]
+            extraL8rsContainerView.addSubview(button)
+            
+            UIView.animateKeyframesWithDuration(0.3, delay: 0, options: nil, animations: { () -> Void in
+                button.alpha = 1
+                button.center.y = self.view.center.y
+                button.center.x = xPos[buttonIndex]
+                button.transform = CGAffineTransformMakeScale(1.0,1.0)
+                }, completion: nil)
+            
+            buttonIndex = buttonIndex + 1
         }
+
     }
     
-    func respondToGesture(sender: UIGestureRecognizer){
+    func extraL8rPressed(sender: UIButton){
+        
+        if sender.tag == 2 {
+            self.showDatePicker()
+            self.hideExtraL8rOptions()
+        }
+        
+    }
+    
+    func showDatePicker(){
+        
+        var datePickerView = UIVisualEffectView(effect: UIBlurEffect(style: .Light))
+        datePickerView.frame = self.view.frame
+        self.view.addSubview(datePickerView)
+        
+        datePicker = UIDatePicker(frame: self.view.frame)
+        datePicker.center.y = self.view.center.y
+        datePicker.minuteInterval = 30
+        datePickerView.addSubview(datePicker)
+        
+        let confirmButton = UIButton(frame: CGRectMake(0, 200, 100, 100))
+        confirmButton.center.x = self.view.center.x
+        confirmButton.center.y = datePicker.frame.maxY+60
+        confirmButton.setImage(UIImage(named: "inboxSnapButtonImage"), forState: .Normal)
+        confirmButton.tag = 777
+        confirmButton.addTarget(self, action: Selector("respondToGesture:"), forControlEvents: .TouchUpInside)
+        datePickerView.addSubview(confirmButton)
+    }
+    
+    func updateL8rFromDatePicker(sender: UIButton){
+        
+        dispatch_async(dispatch_get_main_queue(), {   ()->Void in
+            
+            self.updateL8rWithDate(self.datePicker.date)
+        })
+    }
+    
+    
+    func hideExtraL8rOptions(){
+        self.extraL8rsContainerView.subviews.map({ $0.removeFromSuperview() })
+        extraL8rsContainerView.removeFromSuperview()
+    }
+    
+    
+    func respondToGesture(sender: AnyObject){
         if sender.isKindOfClass(UILongPressGestureRecognizer){
             println("longpress")
             self.showExtraL8rOptions()
@@ -268,17 +331,17 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
             var scheduledDate: NSDate!
             var theCalendar = NSCalendar.currentCalendar()
             let currentTime = NSDate()
-//            let tomorrowComponent = NSDateComponents()
-//            tomorrowComponent.day = 1
-//            let tomorrow = theCalendar.dateByAddingComponents(tomorrowComponent, toDate: currentTime, options: NSCalendarOptions(0))
-//            let tomorrowAt9AmComponents = theCalendar.components(NSCalendarUnit.CalendarUnitCalendar|NSCalendarUnit.CalendarUnitYear|NSCalendarUnit.CalendarUnitMonth|NSCalendarUnit.CalendarUnitDay, fromDate: tomorrow!)
-//            tomorrowAt9AmComponents.hour = 9
-//            scheduledDate = theCalendar.dateFromComponents(tomorrowAt9AmComponents)
-            
-            //in a minute (for testing)
-            let timeComponent = NSDateComponents()
-            timeComponent.minute = 1
-            scheduledDate = theCalendar.dateByAddingComponents(timeComponent, toDate: currentTime, options: NSCalendarOptions(0))
+            let tomorrowComponent = NSDateComponents()
+            tomorrowComponent.day = 1
+            let tomorrow = theCalendar.dateByAddingComponents(tomorrowComponent, toDate: currentTime, options: NSCalendarOptions(0))
+            let tomorrowAt9AmComponents = theCalendar.components(NSCalendarUnit.CalendarUnitCalendar|NSCalendarUnit.CalendarUnitYear|NSCalendarUnit.CalendarUnitMonth|NSCalendarUnit.CalendarUnitDay, fromDate: tomorrow!)
+            tomorrowAt9AmComponents.hour = 9
+            scheduledDate = theCalendar.dateFromComponents(tomorrowAt9AmComponents)
+//            
+//            //in a minute (for testing)
+//            let timeComponent = NSDateComponents()
+//            timeComponent.minute = 1
+//            scheduledDate = theCalendar.dateByAddingComponents(timeComponent, toDate: currentTime, options: NSCalendarOptions(0))
             
             
             self.updateL8rWithDate(scheduledDate)
@@ -287,6 +350,24 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
             self.fetchL8rs()
 
         }
+            
+        else if sender is UIButton {
+            println("Received from Date Picker")
+            
+            let scheduledDate = self.datePicker.date
+            self.updateL8rWithDate(scheduledDate)
+
+            let viewToDisappear = sender.superview!
+            viewToDisappear!.subviews.map({ $0.removeFromSuperview() })
+            viewToDisappear?.removeFromSuperview()
+            
+            self.flashConfirm()
+            self.dismissTopCard()
+            self.fetchL8rs()
+            
+        }
+
+            
         else {
             println("kind of class is \(sender)")
         }
@@ -344,20 +425,24 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
     
     func cardMovedToTop(card: Card) {
         
+        
         dispatch_async(dispatch_get_main_queue(), {   ()->Void in
+            
+            self.actionButtonTitle.selected = false
+
         
             println("text of currentL8R is \(self.currentL8R.text)")
             if self.currentL8R?.text == "Mad Max" {
                 println("its a movie")
                 
                 //TODO: Why is this super duper slow
-                self.actionButtonTitle.enabled = true
+                self.actionButtonTitle.selected = true
                 self.actionButtonTitle.setTitle("🎬", forState: UIControlState.Normal)
 
             }
             else {
                 println("it's not a movie")
-                self.actionButtonTitle.setTitle("❔", forState: .Normal)
+                self.actionButtonTitle.setTitle("", forState: .Normal)
 
             }
         })
