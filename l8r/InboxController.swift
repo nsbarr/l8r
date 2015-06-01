@@ -18,13 +18,14 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
     @IBOutlet weak var cardStackView:CardStack!
     
     var actionButton: UIButton!
-    var actionButtonTitle: UIButton!
     var shareButton: UIButton!
     var snapButton: UIButton!
     var backButton: UIButton!
+    var smartActionButton: UIButton!
     var containerView: UIView!
     var extraL8rsContainerView: UIView!
     var datePicker: UIDatePicker!
+    var scheduledDate: NSDate!
 
 
 
@@ -67,6 +68,7 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
 
         self.addSnapButton()
         self.addBackButton()
+        self.addSmartActionButton()
         self.addActionButton()
         self.addShareButton()
         
@@ -127,7 +129,7 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
             for anItem in results {
                 if let l8rItem = anItem as? L8RItem {
                     //TODO: Diego doesn't like this
-                    println("checking item at date  \(l8rItem.dueDate)")
+                    //println("checking item at date  \(l8rItem.dueDate)")
                     if currentDate.compare(l8rItem.dueDate!) == NSComparisonResult.OrderedDescending {
                         l8rsById[l8rItem.objectIDString] = l8rItem
                     }
@@ -186,6 +188,22 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         cardStackView.addSubview(snapButton)
     }
     
+    func addSmartActionButton(){
+        
+        smartActionButton = UIButton(frame: CGRectMake(self.view.frame.width-(10+64), 20, 64, 64))
+        smartActionButton.setTitle("", forState: .Normal)
+        smartActionButton.titleLabel?.font = UIFont(name: "Arial-BoldMT", size: 45)
+        smartActionButton.addTarget(self, action: Selector("openActionSheet:"), forControlEvents: .TouchUpInside)
+        smartActionButton.titleLabel!.layer.shadowColor = UIColor.blackColor().CGColor
+        smartActionButton.titleLabel!.layer.shadowOffset = CGSizeMake(0, 0)
+        smartActionButton.titleLabel!.layer.shadowOpacity = 1
+        smartActionButton.titleLabel!.layer.shadowRadius = 3
+        view.addSubview(smartActionButton)
+
+
+        
+    }
+    
     
     func addActionButton(){
         actionButton = UIButton(frame: CGRect(x: 28, y: view.frame.height-64, width: 60, height: 60))
@@ -193,7 +211,7 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         actionButton.setTitle("", forState: .Normal)
         actionButton.setImage(UIImage(named: "actionButtonImage"), forState: .Normal)
         actionButton.setImage(UIImage(named: "actionButtonImageEmpty"), forState: UIControlState.Selected)
-        actionButton.addTarget(self, action: Selector("openActionSheet:"), forControlEvents: .TouchUpInside)
+        actionButton.addTarget(self, action: Selector("dismissCard:"), forControlEvents: .TouchUpInside)
         actionButton.titleLabel?.font = UIFont(name: "Arial-BoldMT", size: 40)
         actionButton.titleLabel!.layer.shadowColor = UIColor.blackColor().CGColor
         actionButton.titleLabel!.layer.shadowOffset = CGSizeMake(0, 1)
@@ -202,16 +220,7 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         cardStackView.addSubview(actionButton)
         
         
-        actionButtonTitle = UIButton(frame: actionButton.frame)
-        actionButtonTitle.setTitle("", forState: .Normal)
-        actionButtonTitle.addTarget(self, action: Selector("openActionSheet:"), forControlEvents: .TouchUpInside)
-        actionButtonTitle.titleLabel!.font = UIFont(name: "Arial-BoldMT", size: 32)
-        actionButtonTitle.titleLabel!.layer.shadowColor = UIColor.blackColor().CGColor
-        actionButtonTitle.titleLabel!.layer.shadowOffset = CGSizeMake(0, 1)
-        actionButtonTitle.titleLabel!.layer.shadowOpacity = 1
-        actionButtonTitle.titleLabel!.layer.shadowRadius = 1
-        actionButton.addSubview(actionButtonTitle)
-        actionButtonTitle.center = actionButton.convertPoint(actionButton.center, fromView: actionButton.superview)
+
      //   actionButtonTitle.center = actionButton.center
      //   cardStackView.addSubview(actionButtonTitle)
 
@@ -304,14 +313,6 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         datePickerView.addSubview(confirmButton)
     }
     
-    func updateL8rFromDatePicker(sender: UIButton){
-        
-        dispatch_async(dispatch_get_main_queue(), {   ()->Void in
-            
-            self.updateL8rWithDate(self.datePicker.date)
-        })
-    }
-    
     
     func hideExtraL8rOptions(){
         self.extraL8rsContainerView.subviews.map({ $0.removeFromSuperview() })
@@ -327,49 +328,49 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         else if sender.isKindOfClass(UITapGestureRecognizer){
             println("tap")
             
-            //tomorrow at 9am
-            var scheduledDate: NSDate!
+            
+
             var theCalendar = NSCalendar.currentCalendar()
             let currentTime = NSDate()
-            let tomorrowComponent = NSDateComponents()
-            tomorrowComponent.day = 1
-            let tomorrow = theCalendar.dateByAddingComponents(tomorrowComponent, toDate: currentTime, options: NSCalendarOptions(0))
-            let tomorrowAt9AmComponents = theCalendar.components(NSCalendarUnit.CalendarUnitCalendar|NSCalendarUnit.CalendarUnitYear|NSCalendarUnit.CalendarUnitMonth|NSCalendarUnit.CalendarUnitDay, fromDate: tomorrow!)
-            tomorrowAt9AmComponents.hour = 9
-            scheduledDate = theCalendar.dateFromComponents(tomorrowAt9AmComponents)
-//            
-//            //in a minute (for testing)
-//            let timeComponent = NSDateComponents()
-//            timeComponent.minute = 1
-//            scheduledDate = theCalendar.dateByAddingComponents(timeComponent, toDate: currentTime, options: NSCalendarOptions(0))
+            
+//            //tomorrow at 9am
+//            let tomorrowComponent = NSDateComponents()
+//            tomorrowComponent.day = 1
+//            let tomorrow = theCalendar.dateByAddingComponents(tomorrowComponent, toDate: currentTime, options: NSCalendarOptions(0))
+//            let tomorrowAt9AmComponents = theCalendar.components(NSCalendarUnit.CalendarUnitCalendar|NSCalendarUnit.CalendarUnitYear|NSCalendarUnit.CalendarUnitMonth|NSCalendarUnit.CalendarUnitDay, fromDate: tomorrow!)
+//            tomorrowAt9AmComponents.hour = 9
+//            scheduledDate = theCalendar.dateFromComponents(tomorrowAt9AmComponents)
+            
+            //in a minute (for testing)
+            let timeComponent = NSDateComponents()
+            timeComponent.minute = 1
+            scheduledDate = theCalendar.dateByAddingComponents(timeComponent, toDate: currentTime, options: NSCalendarOptions(0))
             
             
-            self.updateL8rWithDate(scheduledDate)
+           // self.updateL8rWithDate(scheduledDate)
             self.flashConfirm()
-            self.dismissTopCard()
-            self.fetchL8rs()
+            self.cardStackView.swipeOutTopCardWithSpeed(1.0, action: "deferred")
 
         }
             
         else if sender is UIButton {
             println("Received from Date Picker")
             
-            let scheduledDate = self.datePicker.date
-            self.updateL8rWithDate(scheduledDate)
+            scheduledDate = self.datePicker.date
+        //    self.updateL8rWithDate(scheduledDate)
 
             let viewToDisappear = sender.superview!
             viewToDisappear!.subviews.map({ $0.removeFromSuperview() })
             viewToDisappear?.removeFromSuperview()
             
             self.flashConfirm()
-            self.dismissTopCard()
-            self.fetchL8rs()
+            self.cardStackView.swipeOutTopCardWithSpeed(1.0, action: "deferred")
             
         }
 
             
         else {
-            println("kind of class is \(sender)")
+         //   println("kind of class is \(sender)")
         }
 
     }
@@ -388,27 +389,28 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
             }, completion: nil)
     }
     
-    func updateL8rWithDate(scheduledDate: NSDate){
-        
-        dispatch_async(dispatch_get_main_queue(), {   ()->Void in
-            
-            self.currentL8R.dueDate = scheduledDate
-            var error: NSError?
-            self.managedContext.save(&error)
-            
-            if !self.managedContext.save(&error) {
-                println("Unresolved error \(error), \(error!.userInfo)")
-                abort()
-            }
-            else {
-                self.scheduleLocalNotificationWithDueDate(scheduledDate)
-            }
-            
-            
-        })
-        
-    }
-    
+//    func updateL8rWithDate(scheduledDate: NSDate){
+//        
+//        
+//        dispatch_async(dispatch_get_main_queue(), {   ()->Void in
+//            
+//            self.currentL8R.dueDate = scheduledDate
+//            var error: NSError?
+//            self.managedContext.save(&error)
+//            
+//            if !self.managedContext.save(&error) {
+//                println("Unresolved error \(error), \(error!.userInfo)")
+//                abort()
+//            }
+//            else {
+//                self.scheduleLocalNotificationWithDueDate(scheduledDate)
+//            }
+//            
+//            
+//        })
+//
+//    }
+//    
     
     
     func scheduleLocalNotificationWithDueDate(dueDate: NSDate) {
@@ -425,33 +427,24 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
     
     func cardMovedToTop(card: Card) {
         
-        
         dispatch_async(dispatch_get_main_queue(), {   ()->Void in
             
-            self.actionButtonTitle.selected = false
 
-        
-            println("text of currentL8R is \(self.currentL8R.text)")
-            if self.currentL8R?.text == "Mad Max" {
+          //  println("text of currentL8R is \(self.currentL8R.text)")
+            if self.currentL8R?.text == "Mad Max" || self.currentL8R?.text!.rangeOfString("🎬") != nil {
                 println("its a movie")
                 
-                //TODO: Why is this super duper slow
-                self.actionButtonTitle.selected = true
-                self.actionButtonTitle.setTitle("🎬", forState: UIControlState.Normal)
+                self.smartActionButton.setTitle("🎬", forState: UIControlState.Normal)
 
             }
             else {
                 println("it's not a movie")
-                self.actionButtonTitle.setTitle("", forState: .Normal)
+                self.smartActionButton.setTitle("", forState: .Normal)
 
             }
         })
     }
     
-    func dismissTopCard(){
-        self.cardStackView.swipeOutTopCardWithSpeed(1.0)
-
-    }
     
     func inboxButtonPressed(sender:UIButton){
         self.dismissViewControllerAnimated(false, completion: nil)
@@ -459,6 +452,7 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
     
     
     func openShareSheet(sender: UIButton){
+        //TODO: Stamp image here
         var sharingItems = [AnyObject]()
         
         let text = "Check out this L8R and create your own!"
@@ -477,29 +471,70 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
     }
     //MARK: - Card delegate Methods
     
-    func cardRemoved(card: Card) {
-        println("The card \(card.cardId!) was removed!")
+    
+    func cardRemoved(card: Card, cardAction: String) {
         
-        if let cardToRemove = self.currentL8R as L8RItem? {
+     //   println("The card \(card.cardId!) was removed!")
         
-            dispatch_async(dispatch_get_main_queue(), {   ()->Void in
-                
-                self.managedContext.deleteObject(cardToRemove)
-                
-                var error: NSError?
-                
-                if !self.managedContext.save(&error) {
-                    println("Unresolved error \(error), \(error!.userInfo)")
-                    abort()
-                }
-                
-                self.l8rsById.removeValueForKey(card.cardId!)
-                self.fetchL8rs()
-            })
+        if cardAction == "deleted" {
+        
+            if let cardToRemove = self.currentL8R as L8RItem? {
+            
+                dispatch_async(dispatch_get_main_queue(), {   ()->Void in
+                    
+                    
+                    self.managedContext.deleteObject(cardToRemove)
+                    
+                    var error: NSError?
+                    
+                    if !self.managedContext.save(&error) {
+                        println("Unresolved error \(error), \(error!.userInfo)")
+                        abort()
+                    }
+               //     self.l8rsById.removeValueForKey(self.currentL8R.objectIDString)
+                    self.l8rsById.removeValueForKey(card.cardId!)
+                    self.fetchL8rs()
+                })
+                println("card removed, deleted")
+            }
+            else {
+                println("card to remove is nil! aieeee! \(card)")
+            }
         }
+        
+        else if cardAction == "deferred" {
+            
+            if let cardToRemove = self.currentL8R as L8RItem? {
+            
+                dispatch_async(dispatch_get_main_queue(), {   ()->Void in
+                    
+                    println(self.currentL8R)
+                    
+                    cardToRemove.dueDate = self.scheduledDate
+                    var error: NSError?
+                    self.managedContext.save(&error)
+                    
+                    if !self.managedContext.save(&error) {
+                        println("Unresolved error \(error), \(error!.userInfo)")
+                        abort()
+                    }
+                 //   self.l8rsById.removeValueForKey(card.cardId!)
+                 //   self.fetchL8rs()
+                    self.scheduleLocalNotificationWithDueDate(self.scheduledDate)
+                    println("card removed, deferred")
+                })
+            }
+            else {
+                println("card to remove is nil! aieeee! \(card)")
+            }
+            
+        }
+        
         else {
-            println("card to remove is nil! aieeee! \(card)")
+            println("aroo???")
         }
+
+
     }
     
     
@@ -525,10 +560,10 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         
         
         let imageData = l8rsById[uniqueId]?.imageData
-        let image = UIImage(data: imageData!, scale: 1.0)!
+        let image = UIImage(data: imageData!, scale: 0.8)!
         //       let ratio = frame.height/image.size.height
         
-        println("frame passed in: \(frame)")
+      //  println("frame passed in: \(frame)")
         let card: Card = Card(frame: frame)
         
         let cardImageView = UIImageView(frame:card.frame)
@@ -541,7 +576,6 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
 
         card.cardId = uniqueId
         card.center.x = view.center.x
-        
         card.clipsToBounds = true
         
         
@@ -550,13 +584,13 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
     
     func openActionSheet(sender: UIButton){
         println("opening smart do")
-        println("label is \(sender.titleLabel)")
-        if sender.titleLabel?.text == "🎬"{
-            println("opening movie")
-
-            UIApplication.sharedApplication().openURL(NSURL(string:"http://www.fandango.com/pavilionparkslope_aaefw/theaterpage")!)
-            
-        }
+        
+        let movieString = "http://google.com/movies?q=\(currentL8R.text!)"
+        UIApplication.sharedApplication().openURL(NSURL(string: movieString.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!)!)
+    }
+    
+    func dismissCard(sender: UIButton){
+        self.cardStackView.swipeOutTopCardWithSpeed(1.0, action: "deleted")
     }
     
     func addTextViewWithText(text:String, position:String) -> UITextView{

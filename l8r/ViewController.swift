@@ -119,6 +119,10 @@ class ViewController: UIViewController, UIPageViewControllerDelegate, UIPageView
     
     func setupNotificationSettings() {
         
+        
+        //TODO: Unhack this
+        UIApplication.sharedApplication().applicationIconBadgeNumber = 0
+        
         let notificationSettings: UIUserNotificationSettings! = UIApplication.sharedApplication().currentUserNotificationSettings()
         
         if (notificationSettings.types == UIUserNotificationType.None){

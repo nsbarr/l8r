@@ -33,6 +33,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
     var extraL8rsContainerView: UIView!
     var imageContainerView: UIView!
     var inboxButton: UIButton!
+    var questionButton: UIButton!
     var inboxButtonFill: UIButton!
     var datePicker: UIDatePicker!
     
@@ -63,6 +64,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         self.setUpCamera()
         self.addTextView()
         self.addTextButton()
+        self.addQuestionButton()
         self.addFlipButton()
         self.addSnapButton()
         self.addInboxButton()
@@ -193,21 +195,34 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         //TODO: - don't hardcode this
     
         inboxButton = UIButton(frame: CGRectMake(self.view.frame.width-(20+30),self.view.frame.height-60, 30, 30))
-        inboxButton.addTarget(self, action: Selector("swipeToInbox"), forControlEvents:UIControlEvents.TouchUpInside)
+        inboxButton.addTarget(self, action: Selector("swipeToInbox:"), forControlEvents:UIControlEvents.TouchUpInside)
         let inboxButtonImage = UIImage(named: "inboxButtonImage")
         inboxButton.setImage(inboxButtonImage, forState: .Normal)
         inboxButton.alpha = 1
+        inboxButton.tag = 3
         view.addSubview(inboxButton)
         
         inboxButtonFill = UIButton(frame: CGRectMake(self.view.frame.width-(20+30),self.view.frame.height-60, 30, 30))
-        inboxButtonFill.addTarget(self, action: Selector("swipeToInbox"), forControlEvents:UIControlEvents.TouchUpInside)
+        inboxButtonFill.addTarget(self, action: Selector("swipeToInbox:"), forControlEvents:UIControlEvents.TouchUpInside)
         let inboxButtonFillImage = UIImage(named: "inboxFillImage")
         inboxButtonFill.setImage(inboxButtonFillImage, forState: .Normal)
         inboxButtonFill.alpha = 0
+        inboxButtonFill.tag = 3
         view.addSubview(inboxButtonFill)
-        
-        
     
+    }
+    
+    func addQuestionButton(){
+        
+        //TODO: - don't hardcode this
+        
+        questionButton = UIButton(frame: CGRectMake(20,self.view.frame.height-60, 30, 30))
+        questionButton.addTarget(self, action: Selector("swipeToInbox:"), forControlEvents:UIControlEvents.TouchUpInside)
+        let inboxButtonImage = UIImage(named: "questionButtonImage")
+        questionButton.setImage(inboxButtonImage, forState: .Normal)
+        questionButton.alpha = 1
+        questionButton.tag = 1
+        view.addSubview(questionButton)
     }
     
     
@@ -262,10 +277,19 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         
     }
     
-    func swipeToInbox(){
+    func swipeToInbox(sender: UIButton){
         let pvc = self.parentViewController as! UIPageViewController
         let ic = self.storyboard!.instantiateViewControllerWithIdentifier("InboxController") as! InboxController
-        pvc.setViewControllers([ic], direction: .Forward, animated: true, completion: nil)
+        let mc = self.storyboard!.instantiateViewControllerWithIdentifier("MagicController") as! MagicController
+        
+        if sender.tag == 3 {
+        
+            pvc.setViewControllers([ic], direction: .Forward, animated: true, completion: nil)
+        }
+        else if sender.tag == 1 {
+            pvc.setViewControllers([mc], direction: .Reverse, animated: true, completion: nil)
+
+        }
     }
     
     func addTextButton(){
@@ -384,29 +408,10 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
                     let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageDataSampleBuffer)
                     let metadata:NSDictionary = CMCopyDictionaryOfAttachments(nil, imageDataSampleBuffer, CMAttachmentMode(kCMAttachmentMode_ShouldPropagate)).takeUnretainedValue()
 
-                    if let theImage = UIImage(data: imageData, scale: 1.0) {
+                    if var theImage = UIImage(data: imageData, scale: 1.0) {
                         
-                        
-//                        //stuff that has to do with saving the image
-//                        
-//                        let imageView = UIImageView(frame: CGRectMake(0, 0, theImage.size.width*self.view.frame.height/theImage.size.height, self.view.frame.height))
-//                        imageView.contentMode = UIViewContentMode.ScaleToFill
-//
-//                        if !self.currentDeviceIsBack {
-//                            imageView.image = UIImage(CGImage: theImage.CGImage, scale: theImage.scale, orientation: UIImageOrientation.LeftMirrored)
-//                        }
-//                        else {
-//                            imageView.image = theImage
-//                        }
-//                        
-//                        UIGraphicsBeginImageContextWithOptions(imageView.bounds.size, imageView.opaque, 0.0)
-//                        imageView.drawViewHierarchyInRect(imageView.bounds, afterScreenUpdates: true)
-//                        let snapshotImage = UIGraphicsGetImageFromCurrentImageContext()
-//                        UIGraphicsEndImageContext()
-//                        self.snapshotImage = snapshotImage
-                        
-                        //TODO: we shouldn't have to wait for the snapshot to bring up the l8r options
-                    
+                        //TODO: mirror selfies
+
                         if sender.isKindOfClass(UILongPressGestureRecognizer){
                             println("longpress")
                             self.showExtraL8rOptions()
@@ -418,7 +423,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
                             var theCalendar = NSCalendar.currentCalendar()
                             let currentTime = NSDate()
                         
-                            
+//                            
 //                            //tomorrow at 9am
 //                            let tomorrowComponent = NSDateComponents()
 //                            tomorrowComponent.day = 1
@@ -433,10 +438,9 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
                             timeComponent.second = 1
                             scheduledDate = theCalendar.dateByAddingComponents(timeComponent, toDate: currentTime, options: NSCalendarOptions(0))
                             
-                            let position = self.textViewPosition
-                        
-                            self.saveL8rWithDate(scheduledDate, imageData:imageData, position:position)
                             
+                            let position = self.textViewPosition
+                            self.saveL8rWithDate(scheduledDate, imageData:imageData, position:position)
                             self.flashConfirm()
 
                             
@@ -480,7 +484,6 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
             let entity = NSEntityDescription.entityForName("L8R", inManagedObjectContext: self.managedContext)
             
             let l8rItem:L8RItem = NSEntityDescription.insertNewObjectForEntityForName("L8RItem", inManagedObjectContext: self.managedContext) as! L8RItem
-            //TODO: Does compression happen here?
             l8rItem.imageData = imageData
             l8rItem.dueDate = scheduledDate
             l8rItem.text = self.l8rText
@@ -604,7 +607,6 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
     func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {
         if(text == "\n") {
             
-            //TODO: trying to resize text view. (need to think about container inset)
             l8rText = textView.text
             if pan != nil {
                 textView.removeGestureRecognizer(pan!)

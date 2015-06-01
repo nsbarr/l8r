@@ -119,7 +119,7 @@ public protocol CardStackDelegate {
     
     func cardAtIndex(index: Int, frame: CGRect) -> Card
     
-    func cardRemoved(card: Card)
+    func cardRemoved(card: Card, cardAction: String)
     
     func cardMovedToTop(card: Card)
 }
@@ -317,7 +317,7 @@ public class CardStack : UIView {
             if (velocity.y < swipeUpThreshold) {
                 println("swipe up")
                 dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                    self.swipeOutTopCardWithSpeed(0.4)
+                    self.swipeOutTopCardWithSpeed(0.4, action: "deleted")
                 })
             }
             else if (velocity.y > swipeDownThreshold) {
@@ -326,7 +326,7 @@ public class CardStack : UIView {
             else {
                 if (verticalDistanceTraveled > swipeOutThreshold) {
                     dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                        self.swipeOutTopCardWithSpeed(0.4)
+                        self.swipeOutTopCardWithSpeed(0.4, action: "deleted")
                     })
                 }
                 else {
@@ -495,7 +495,7 @@ public class CardStack : UIView {
         }
     }
     
-    func swipeOutTopCardWithSpeed(speed: NSTimeInterval) {
+    func swipeOutTopCardWithSpeed(speed: NSTimeInterval, action: String) {
         let actionView = self.topView
         let newTopView = self.hiddenView
         
@@ -565,7 +565,7 @@ public class CardStack : UIView {
                             
                             
                             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), { () -> Void in
-                                self.delegate?.cardRemoved(currentCard)
+                                self.delegate?.cardRemoved(currentCard, cardAction: action)
                                 
                                 self.topCard = nil
                                 
