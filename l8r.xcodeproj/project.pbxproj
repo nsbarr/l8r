@@ -19,6 +19,8 @@
 		013955121B07BCAC00C553F1 /* MagicController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013955111B07BCAC00C553F1 /* MagicController.swift */; };
 		013955141B08111E00C553F1 /* L8RItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013955131B08111E00C553F1 /* L8RItem.swift */; };
 		016BF3711B0951B500935D59 /* Dosis-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 016BF3701B0951B500935D59 /* Dosis-Bold.ttf */; };
+		01C2E5B11B1E407D0029B20B /* OnboardingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01C2E5B01B1E407D0029B20B /* OnboardingViewController.swift */; };
+		01C2E5B31B1E40A00029B20B /* OnboardingContentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01C2E5B21B1E40A00029B20B /* OnboardingContentViewController.swift */; };
 		01C8D40D1B0A2B0600FD95AA /* CardStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01C8D40C1B0A2B0600FD95AA /* CardStack.swift */; };
 /* End PBXBuildFile section */
 
@@ -49,6 +51,8 @@
 		013955111B07BCAC00C553F1 /* MagicController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MagicController.swift; sourceTree = "<group>"; };
 		013955131B08111E00C553F1 /* L8RItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = L8RItem.swift; sourceTree = "<group>"; };
 		016BF3701B0951B500935D59 /* Dosis-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Dosis-Bold.ttf"; sourceTree = "<group>"; };
+		01C2E5B01B1E407D0029B20B /* OnboardingViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OnboardingViewController.swift; sourceTree = "<group>"; };
+		01C2E5B21B1E40A00029B20B /* OnboardingContentViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OnboardingContentViewController.swift; sourceTree = "<group>"; };
 		01C8D40C1B0A2B0600FD95AA /* CardStack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CardStack.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -94,6 +98,8 @@
 			isa = PBXGroup;
 			children = (
 				013954EA1B07B93300C553F1 /* AppDelegate.swift */,
+				01C2E5B01B1E407D0029B20B /* OnboardingViewController.swift */,
+				01C2E5B21B1E40A00029B20B /* OnboardingContentViewController.swift */,
 				013954EF1B07B93300C553F1 /* ViewController.swift */,
 				013954F11B07B93300C553F1 /* Main.storyboard */,
 				013955111B07BCAC00C553F1 /* MagicController.swift */,
@@ -182,6 +188,7 @@
 				TargetAttributes = {
 					013954E41B07B93300C553F1 = {
 						CreatedOnToolsVersion = 6.3.1;
+						DevelopmentTeam = 3RA98GNA2A;
 					};
 					013954FC1B07B93300C553F1 = {
 						CreatedOnToolsVersion = 6.3.1;
@@ -239,8 +246,10 @@
 				01C8D40D1B0A2B0600FD95AA /* CardStack.swift in Sources */,
 				013955101B07BC7300C553F1 /* InboxController.swift in Sources */,
 				013955121B07BCAC00C553F1 /* MagicController.swift in Sources */,
+				01C2E5B31B1E40A00029B20B /* OnboardingContentViewController.swift in Sources */,
 				0139550E1B07BB8D00C553F1 /* CameraController.swift in Sources */,
 				013955141B08111E00C553F1 /* L8RItem.swift in Sources */,
+				01C2E5B11B1E407D0029B20B /* OnboardingViewController.swift in Sources */,
 				013954EB1B07B93300C553F1 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -368,9 +377,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = l8r/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Debug;
 		};
@@ -378,9 +391,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = l8r/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Release;
 		};

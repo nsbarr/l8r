@@ -13,11 +13,109 @@ import CoreData
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    let userHasOnboardedKey = "user_has_onboarded"
 
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
+        self.window = UIWindow(frame: UIScreen.mainScreen().bounds)
+        self.window!.backgroundColor = UIColor.whiteColor()
+        
+        application.statusBarStyle = .LightContent
+        
+        if let options = launchOptions {
+            if (options[UIApplicationLaunchOptionsLocalNotificationKey] != nil){
+                NSNotificationCenter.defaultCenter().postNotificationName("pushNotification", object: nil)
+            }
+        }
+        
+        // Determine if the user has completed onboarding yet or not
+        var userHasOnboardedAlready = NSUserDefaults.standardUserDefaults().boolForKey(userHasOnboardedKey)
+        
+        // If the user has already onboarded, setup the normal root view controller for the application
+        // without animation like you normally would if you weren't doing any onboarding
+        if userHasOnboardedAlready {
+            self.setupNormalRootVC(false);
+        }
+        
+            // Otherwise the user hasn't onboarded yet, so set the root view controller for the application to the
+            // onboarding view controller generated and returned by this method.
+        else {
+            self.window!.rootViewController = self.generateOnboardingViewController()
+        }
+        
+        self.window!.makeKeyAndVisible()
+        
         return true
+    }
+    
+    func generateOnboardingViewController() -> OnboardingViewController {
+        
+        let yellowBg = UIColor(red: 255/255, green: 240/255, blue: 169/255, alpha: 1)
+        let pinkBg = UIColor(red: 250/255, green: 130/255, blue: 160/255, alpha: 1)
+        let greenBg = UIColor(red: 129/255, green: 230/255, blue: 213/255, alpha: 1)
+        
+        // Generate the first page...
+        let firstPage: OnboardingContentViewController = OnboardingContentViewController(title: "Welcome to l8r", body: "l8r is the chillest way to capture the things that you want to do later.", image: UIImage(named:
+            "onboarding-flamingo"), buttonText: "", bgColor: yellowBg) {
+                println("Do something here...");
+        }
+        
+        // Generate the second page...
+        let secondPage: OnboardingContentViewController = OnboardingContentViewController(title: "Do it l8r", body: "Snap or jot down anything you want to check out, and glenn the g8r will make sure you don't forget.", image: UIImage(named:
+            "onboarding-g8r"), buttonText: "", bgColor: pinkBg) {
+                println("Do something else here...");
+        }
+        
+        // Generate the third page, and when the user hits the button we want to handle that the onboarding
+        // process has been completed.
+        let thirdPage: OnboardingContentViewController = OnboardingContentViewController(title: "Let's try it", body: "Give l8r permission to access the camera to get started.", image: UIImage(named:
+            "onboarding-cam"), buttonText: "  Open Camera  ", bgColor: greenBg) {
+                self.handleOnboardingCompletion()
+        }
+        
+        // Create the onboarding controller with the pages and return it.
+        let onboardingVC: OnboardingViewController = OnboardingViewController(backgroundImage: UIImage(named: "street"), contents: [firstPage, secondPage, thirdPage])
+        
+        return onboardingVC
+    }
+    
+    func handleOnboardingCompletion() {
+        // Now that we are done onboarding, we can set in our NSUserDefaults that we've onboarded now, so in the
+        // future when we launch the application we won't see the onboarding again.
+        NSUserDefaults.standardUserDefaults().setBool(true, forKey: userHasOnboardedKey)
+        
+        // Setup the normal root view controller of the application, and set that we want to do it animated so that
+        // the transition looks nice from onboarding to normal app.
+        setupNormalRootVC(false)
+    }
+    
+    func setupNormalRootVC(animated : Bool) {
+        // Here I'm just creating a generic view controller to represent the root of my application.
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        var mainVC = storyboard.instantiateViewControllerWithIdentifier("ViewController") as! ViewController
+        
+        // If we want to animate it, animate the transition - in this case we're fading, but you can do it
+        // however you want.
+        if animated {
+            UIView.transitionWithView(self.window!, duration: 0.5, options:.TransitionCrossDissolve, animations: { () -> Void in
+                self.window!.rootViewController = mainVC
+                }, completion:nil)
+        }
+            
+            // Otherwise we just want to set the root view controller normally.
+        else {
+            self.window?.rootViewController = mainVC;
+        }
+    }
+
+    
+    func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
+        println("received local notification")
+        //[[NSNotificationCenter defaultCenter] postNotificationName:@"pushNotification" object:nil userInfo:userInfo];
+        NSNotificationCenter.defaultCenter().postNotificationName("pushNotification", object: nil)
+
+
     }
 
     func applicationWillResignActive(application: UIApplication) {

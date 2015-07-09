@@ -20,7 +20,7 @@ extension UIView {
         }
     }
     
-    public func setShadowAndCorners(cornerRadius: Int = 8, shadowOffset: CGSize = CGSize(width: 0, height: 8), shadowColor: UIColor = UIColor.blackColor(), shadowRadius: Int = 8, shadowOpacity: Float = 0.4) {
+    public func setShadowAndCorners(cornerRadius: Int = 0, shadowOffset: CGSize = CGSize(width: 0, height: 8), shadowColor: UIColor = UIColor.blackColor(), shadowRadius: Int = 8, shadowOpacity: Float = 0.4) {
         let layer = self.layer
         layer.shadowColor = UIColor.blackColor().CGColor
         layer.shadowOffset = shadowOffset
@@ -38,6 +38,7 @@ public typealias SwipeGestureAction = (UISwipeGestureRecognizer!) -> Void
 class GestureView : UIView, UIGestureRecognizerDelegate {
     private(set) var swipeGestureRecognizer: UISwipeGestureRecognizer! = nil
     private(set) var panGestureRecognizer: UIPanGestureRecognizer! = nil
+    private(set) var screenEdgeGestureRecognizer: UIScreenEdgePanGestureRecognizer! = nil
     
     var panAction:PanGestureAction? = nil
     var swipeAction:SwipeGestureAction? = nil
@@ -69,22 +70,59 @@ class GestureView : UIView, UIGestureRecognizerDelegate {
         addGestureRecognizer(self.panGestureRecognizer)
         self.panGestureRecognizer.delegate = self
         
+        
+        screenEdgeGestureRecognizer = UIScreenEdgePanGestureRecognizer(target: self, action: Selector("handleScreenEdge:"))
+        screenEdgeGestureRecognizer.cancelsTouchesInView = false
+        screenEdgeGestureRecognizer.delegate = self
+        addGestureRecognizer(screenEdgeGestureRecognizer)
+        
         //        self.swipeGestureRecognizer.requireGestureRecognizerToFail(self.panGestureRecognizer)
         
         //        tapGestureRecognizer.requireGestureRecognizerToFail(swipeGestureRecognizer)
         
+        screenEdgeGestureRecognizer.requireGestureRecognizerToFail(panGestureRecognizer)
+      //  screenEdgeGestureRecognizer.re
+        
+        
     }
     
+    internal func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWithGestureRecognizer otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
+    }
+    
+    internal func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldBeRequiredToFailByGestureRecognizer otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        
+        println("gr: \(gestureRecognizer)")
+        println("ogr: \(otherGestureRecognizer)")
+        
+        return false
+    }
+    
+    internal func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldRequireFailureOfGestureRecognizer otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        
+        return false
+    }
+    
+    //FTT only swipe works
+    //FTF only pan works
+    //FFT only swipe works
+    //FFF only pan works
+    
+    //TFT only swipe works
+    //TTT only swipe works
+    //TFF both work
+    
+    //TTF only pan works
     
     internal func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldReceiveTouch touch: UITouch) -> Bool {
         
-
-
+       // println(gestureRecognizer)
+    
         
-        if (gestureRecognizer == self.panGestureRecognizer || gestureRecognizer == self.swipeGestureRecognizer) {
-            return true
+        if (gestureRecognizer != self.panGestureRecognizer) {
+            return false
         }
-        return false
+        return true
     }
     
     func handlePan(recognizer: UIPanGestureRecognizer) {
@@ -96,6 +134,10 @@ class GestureView : UIView, UIGestureRecognizerDelegate {
         if let swipeAction = self.swipeAction {
             swipeAction(recognizer)
         }
+    }
+    
+    func handleScreenEdge(recognizer: UIScreenEdgePanGestureRecognizer){
+        println("handling")
     }
 }
 ///superclass for the views that will display the actual cards.
@@ -355,7 +397,7 @@ public class CardStack : UIView {
     
     public func loadStack() {
         
-        //TODO: add back assers and solve the UIPageViewController issue with consecutive willAppears
+        //need to solve the UIPageViewController issue with consecutive willAppears
         
 //        assert(self.topView.subviews.count == 0, "topview has contents, can’t load.")
 //        assert(self.hiddenView.subviews.count == 0, "hiddenView has contents, can’t load.")
@@ -480,11 +522,11 @@ public class CardStack : UIView {
     func setCardToView(cardIndex: Int, view: UIView) {
         if let delegate = self.delegate {
             println("setting card \(cardIndex)")
-            //TODO: - re-add this assert. Doesn't work with PageController
+            //Doesn't work with PageController
             //     assert(view.subviews.count == 0, "view for adding card has subviews!")
             let card = delegate.cardAtIndex(cardIndex, frame: view.frame)
             card.tag = self.cardTag
-            card.layer.cornerRadius = CGFloat(8)
+            card.layer.cornerRadius = CGFloat(0)
             view.addSubview(card)
             card.centerInSuperview()
             if topCard == nil {
@@ -529,7 +571,6 @@ public class CardStack : UIView {
                                 println("that was the last card!")
                                 self.topView.alpha = 0
                                 self.topView.centerInSuperview()
-                                //TODO: elegantly fade out the action buttons here?
                             }
                             else {
                                 self.topView = newTopView

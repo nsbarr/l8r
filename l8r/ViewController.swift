@@ -15,6 +15,7 @@ class ViewController: UIViewController, UIPageViewControllerDelegate, UIPageView
     var magicController: MagicController!
     var cameraController: CameraController!
     var inboxController: InboxController!
+    var pageController: UIPageViewController!
     
     //MARK: - Lifecycle
 
@@ -22,6 +23,19 @@ class ViewController: UIViewController, UIPageViewControllerDelegate, UIPageView
         super.viewDidLoad()
         self.setupNotificationSettings()
         self.createPageViewController()
+        
+        // [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pushNotificationReceived) name:@"pushNotification" object:nil];
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: Selector("pushNotificationReceived"), name: "pushNotification", object: nil)
+        
+    }
+    
+    func pushNotificationReceived(){
+        println("preseting ivc")
+        
+       self.pageController.setViewControllers([inboxController], direction: UIPageViewControllerNavigationDirection.Forward, animated: true, completion: nil)
+        
+    //    self.pageIndex = 2
+    //    createPageViewController()
         
     }
     
@@ -36,7 +50,7 @@ class ViewController: UIViewController, UIPageViewControllerDelegate, UIPageView
         inboxController = self.storyboard!.instantiateViewControllerWithIdentifier("InboxController") as! InboxController
         
         
-        let pageController = self.storyboard!.instantiateViewControllerWithIdentifier("PageController") as! UIPageViewController
+        pageController = self.storyboard!.instantiateViewControllerWithIdentifier("PageController") as! UIPageViewController
         pageController.delegate = self
         pageController.dataSource = self
         
@@ -46,6 +60,7 @@ class ViewController: UIViewController, UIPageViewControllerDelegate, UIPageView
         
 
         pageController.addChildViewController(cameraController)
+        pageController.addChildViewController(inboxController)
         self.view.addSubview(pageController.view)
         pageController.didMoveToParentViewController(self)
         
@@ -98,7 +113,8 @@ class ViewController: UIViewController, UIPageViewControllerDelegate, UIPageView
         println("getting index \(index)")
         
         if index == 0 {
-            return magicController
+            //return magicController
+            return nil
         }
         else if index == 1 {
             

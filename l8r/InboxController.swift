@@ -13,7 +13,6 @@ import CoreData
 class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackDelegate, UITextViewDelegate {
     
     //MARK: - Variables
-
     
     @IBOutlet weak var cardStackView:CardStack!
     
@@ -26,8 +25,6 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
     var extraL8rsContainerView: UIView!
     var datePicker: UIDatePicker!
     var scheduledDate: NSDate!
-
-
 
     var l8rsById:[String:L8RItem]!
     
@@ -65,7 +62,6 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         println("inbox")
         super.viewDidLoad()
         self.setUpCoreData()
-
         self.addSnapButton()
         self.addBackButton()
         self.addSmartActionButton()
@@ -103,14 +99,19 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         backButton = UIButton(frame: CGRectMake(10, 20, 40, 40))
         backButton.setImage(UIImage(named: "backButtonImage"), forState: .Normal)
         backButton.addTarget(self, action: Selector("backToCamera:"), forControlEvents: .TouchUpInside)
+        //TODO: decide what to do
+        backButton.hidden = false
         view.addSubview(backButton)
     }
     
     func backToCamera(sender: UIButton){
-        let pvc = self.parentViewController as! UIPageViewController
+        //let pvc = self.parentViewController as! UIPageViewController
         
-        let appDelegate  = UIApplication.sharedApplication().delegate as! AppDelegate
+        
+        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
         let viewController = appDelegate.window!.rootViewController as! ViewController
+        let pvc = viewController.childViewControllers[0] as! UIPageViewController
+        println(pvc)
         let cc = viewController.viewControllerAtIndex(1)
         pvc.setViewControllers([cc], direction: UIPageViewControllerNavigationDirection.Reverse, animated: true, completion: nil)
     }
@@ -162,7 +163,7 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
 
 
     func updateButtonFrames() {
-        self.snapButton.frame = CGRect(x: 0, y: view.frame.height-90, width: 60, height: 60)
+        self.snapButton.frame = CGRect(x: 0, y: view.frame.height-74, width: 60, height: 60)
         snapButton.center.x = view.center.x-40
         self.actionButton.frame = CGRect(x: snapButton.center.x+60, y: snapButton.frame.origin.y, width: 60, height: 60)
         self.shareButton.frame = CGRect(x: actionButton.center.x+60, y: snapButton.frame.origin.y, width: 60, height: 60)
@@ -185,7 +186,7 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         snapButton.addGestureRecognizer(longpress)
         longpress.delegate = self
         
-        cardStackView.addSubview(snapButton)
+        self.view.addSubview(snapButton)
     }
     
     func addSmartActionButton(){
@@ -217,7 +218,7 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         actionButton.titleLabel!.layer.shadowOffset = CGSizeMake(0, 1)
         actionButton.titleLabel!.layer.shadowOpacity = 1
         actionButton.titleLabel!.layer.shadowRadius = 1
-        cardStackView.addSubview(actionButton)
+        self.view.addSubview(actionButton)
         
         
 
@@ -232,7 +233,7 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
         shareButton.center.x = snapButton.center.x+100
         shareButton.setImage(buttonImage, forState: .Normal)
         shareButton.addTarget(self, action: Selector("openShareSheet:"), forControlEvents: .TouchUpInside)
-        cardStackView.addSubview(shareButton)
+        self.view.addSubview(shareButton)
     }
     
     
@@ -333,18 +334,18 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
             var theCalendar = NSCalendar.currentCalendar()
             let currentTime = NSDate()
             
-//            //tomorrow at 9am
-//            let tomorrowComponent = NSDateComponents()
-//            tomorrowComponent.day = 1
-//            let tomorrow = theCalendar.dateByAddingComponents(tomorrowComponent, toDate: currentTime, options: NSCalendarOptions(0))
-//            let tomorrowAt9AmComponents = theCalendar.components(NSCalendarUnit.CalendarUnitCalendar|NSCalendarUnit.CalendarUnitYear|NSCalendarUnit.CalendarUnitMonth|NSCalendarUnit.CalendarUnitDay, fromDate: tomorrow!)
-//            tomorrowAt9AmComponents.hour = 9
-//            scheduledDate = theCalendar.dateFromComponents(tomorrowAt9AmComponents)
+            //tomorrow at 9am
+            let tomorrowComponent = NSDateComponents()
+            tomorrowComponent.day = 1
+            let tomorrow = theCalendar.dateByAddingComponents(tomorrowComponent, toDate: currentTime, options: NSCalendarOptions(0))
+            let tomorrowAt9AmComponents = theCalendar.components(NSCalendarUnit.CalendarUnitCalendar|NSCalendarUnit.CalendarUnitYear|NSCalendarUnit.CalendarUnitMonth|NSCalendarUnit.CalendarUnitDay, fromDate: tomorrow!)
+            tomorrowAt9AmComponents.hour = 9
+            scheduledDate = theCalendar.dateFromComponents(tomorrowAt9AmComponents)
             
-            //in a minute (for testing)
-            let timeComponent = NSDateComponents()
-            timeComponent.minute = 1
-            scheduledDate = theCalendar.dateByAddingComponents(timeComponent, toDate: currentTime, options: NSCalendarOptions(0))
+//            //in a minute (for testing)
+//            let timeComponent = NSDateComponents()
+//            timeComponent.minute = 1
+//            scheduledDate = theCalendar.dateByAddingComponents(timeComponent, toDate: currentTime, options: NSCalendarOptions(0))
             
             
            // self.updateL8rWithDate(scheduledDate)
@@ -518,8 +519,8 @@ class InboxController: UIViewController, UIGestureRecognizerDelegate, CardStackD
                         println("Unresolved error \(error), \(error!.userInfo)")
                         abort()
                     }
-                 //   self.l8rsById.removeValueForKey(card.cardId!)
-                 //   self.fetchL8rs()
+                    self.l8rsById.removeValueForKey(card.cardId!)
+                    self.fetchL8rs()
                     self.scheduleLocalNotificationWithDueDate(self.scheduledDate)
                     println("card removed, deferred")
                 })

@@ -13,7 +13,7 @@ import CoreData
 
 
 
-class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextViewDelegate {
+class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     
     //  MARK: - Variables
@@ -48,13 +48,14 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
     var appDelegate: AppDelegate!
     var managedContext: NSManagedObjectContext!
     var l8rsById:[String:L8RItem]!
+    
+    //onboarding setup
+    let userHasTakenL8rKey = "user_has_taken_l8r"
 
 
 
     
     //image setup
-    var snapshotImage: UIImage!
-    
 
 
     //MARK: - View Lifecycle
@@ -67,6 +68,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         self.addQuestionButton()
         self.addFlipButton()
         self.addSnapButton()
+        self.addImagePickerButton()
         self.addInboxButton()
 
     }
@@ -212,6 +214,33 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
     
     }
     
+    func addImagePickerButton(){
+        var imagePickerButton = UIButton(frame: CGRect(x: self.view.frame.width-100, y: 20, width: 40, height: 40))
+        imagePickerButton.setTitle("Ok", forState: .Normal)
+        //imagePickerButton.setImage(UIImage(named: "imageGalleryButton"), forState: .Normal)
+        imagePickerButton.addTarget(self, action: Selector("imagePickerButtonPressed:"), forControlEvents: .TouchUpInside)
+        imagePickerButton.enabled = true // doesn't work yet
+        imagePickerButton.alpha = 1
+        imagePickerButton.tag = 101
+       // view.addSubview(imagePickerButton)
+    }
+    
+    func imagePickerButtonPressed(sender: UIButton){
+        let imagePicker = UIImagePickerController()
+        
+        imagePicker.delegate = self
+        imagePicker.sourceType = UIImagePickerControllerSourceType.SavedPhotosAlbum
+        imagePicker.allowsEditing = false
+        
+        self.presentViewController(imagePicker, animated: true,
+            completion: nil)
+    }
+    
+    func imagePickerController(picker: UIImagePickerController, didFinishPickingImage image: UIImage!, editingInfo: [NSObject : AnyObject]!) {
+        
+        picker.dismissViewControllerAnimated(true, completion: nil)
+    }
+    
     func addQuestionButton(){
         
         //TODO: - don't hardcode this
@@ -222,7 +251,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         questionButton.setImage(inboxButtonImage, forState: .Normal)
         questionButton.alpha = 1
         questionButton.tag = 1
-        view.addSubview(questionButton)
+       // view.addSubview(questionButton)
     }
     
     
@@ -368,6 +397,52 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         
     }
     
+    
+    func getImageRecognition(imageData: NSData){
+        var url = NSURL(string: "http://earlspeaks.ngrok.com/api/image_to_labels")
+        var request = NSMutableURLRequest(URL: url!)
+        request.HTTPMethod = "POST"
+        let encodedData = NSData(base64EncodedData: imageData, options: nil)
+        request.HTTPBody = imageData
+        
+        var response: NSURLResponse? = nil
+        var error: NSError? = nil
+        let reply = NSURLConnection.sendSynchronousRequest(request, returningResponse:&response, error:&error)
+        
+        let results = NSString(data:reply!, encoding:NSUTF8StringEncoding)
+        println("API Response: \(results)")
+    }
+    
+    func justNoodlin(imageData: NSData){
+        
+
+        var base64String = imageData.base64EncodedStringWithOptions(.allZeros)
+        
+        base64String = base64String.stringByReplacingOccurrencesOfString("+", withString: "%2B")
+
+      //  let dictionary = ["api_key" : "mfVi4AaGEjlrLN13", "api_secret" : "qvR0IUUrxqbdF6FS", "jobs" : "scene", "base64" : base64String]
+        
+        let dictionary = ["api_key" : "mfVi4AaGEjlrLN13", "api_secret" : "qvR0IUUrxqbdF6FS", "jobs" : "scene_understanding_3", "urls" : "http://rekognition.com/static/img/beach.jpg"]
+        
+        
+       // let fooDict = dictionary.description.dataUsingEncoding(NSUTF8StringEncoding)
+       let fooDict = NSKeyedArchiver.archivedDataWithRootObject(dictionary)
+
+        var url = NSURL(string:"http://rekognition.com/func/api/")
+        let request = NSMutableURLRequest(URL: url!)
+        request.HTTPMethod = "POST"
+        request.HTTPBody = fooDict
+        
+        var response: NSURLResponse? = nil
+        var error: NSError? = nil
+        let reply = NSURLConnection.sendSynchronousRequest(request, returningResponse:&response, error:&error)
+        
+        let results = NSString(data:reply!, encoding:NSUTF8StringEncoding)
+        println("API Response: \(results)")
+        
+    }
+    
+    
     func handleTextViewPan(sender: UIPanGestureRecognizer){
         let viewToPan = sender.view
         let translation = sender.translationInView(self.view)
@@ -385,6 +460,33 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
     func l8rButtonTapped(sender: UITapGestureRecognizer){
         self.previewLayer?.connection.enabled = false
         self.takeScreenSnapshotFromGesture(sender)
+        
+        // Determine if the user has completed onboarding yet or not
+        var userHasOnboardedAlready = NSUserDefaults.standardUserDefaults().boolForKey(userHasTakenL8rKey)
+        
+        // If the user has already onboarded, setup the normal root view controller for the application
+        // without animation like you normally would if you weren't doing any onboarding
+        if userHasOnboardedAlready {
+            
+        }
+            
+            // Otherwise the user hasn't onboarded yet, so set the root view controller for the application to the
+            // onboarding view controller generated and returned by this method.
+        else {
+            self.presentViewController(self.generateOnboardingViewController(), animated: true, completion: nil)
+        }
+        
+    }
+    
+    func generateOnboardingViewController() -> OnboardingContentViewController {
+        
+        let greenBg = UIColor(red: 129/255, green: 230/255, blue: 213/255, alpha: 1)
+
+        let thirdPage: OnboardingContentViewController = OnboardingContentViewController(title: "Your first l8r!", body: "Yup, it’s that easy. I'll nudge you about your l8rs tomorrow, or whenever I finish tanning.", image: UIImage(named:
+            "cameraTutImage"), buttonText: "  Got it  ", bgColor: greenBg) {
+                self.handleOnboardingCompletion()
+        }
+        return thirdPage
     }
     
     func l8rButtonLongpressed(sender: UILongPressGestureRecognizer){
@@ -394,7 +496,28 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         }
     }
     
+    func handleOnboardingCompletion(){
+        NSUserDefaults.standardUserDefaults().setBool(true, forKey: userHasTakenL8rKey)
+        self.dismissViewControllerAnimated(false, completion: nil)
+    }
+    
+
+    
     func takeScreenSnapshotFromGesture(sender: AnyObject){
+        
+        if sender.isKindOfClass(UITapGestureRecognizer){
+        
+            let darkView = UIView(frame: self.view.frame)
+            darkView.backgroundColor = UIColor.blackColor()
+            self.view.addSubview(darkView)
+            
+            UIView.animateWithDuration(0.3, animations: { () -> Void in
+                darkView.alpha = 0
+                }) { (Bool) -> Void in
+                    darkView.removeFromSuperview()
+            }
+        }
+        
         dispatch_async(sessionQueue) { () -> Void in
             
             let connection = self.stillCameraOutput.connectionWithMediaType(AVMediaTypeVideo)
@@ -417,33 +540,31 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
                             self.showExtraL8rOptions()
                         }
                         else if sender.isKindOfClass(UITapGestureRecognizer){
-                            println("tap")
-                            
+                            self.confirmWithImage(theImage)
                             var scheduledDate: NSDate!
                             var theCalendar = NSCalendar.currentCalendar()
                             let currentTime = NSDate()
                         
-//                            
-//                            //tomorrow at 9am
-//                            let tomorrowComponent = NSDateComponents()
-//                            tomorrowComponent.day = 1
-//                            let tomorrow = theCalendar.dateByAddingComponents(tomorrowComponent, toDate: currentTime, options: NSCalendarOptions(0))
-//                            let tomorrowAt9AmComponents = theCalendar.components(NSCalendarUnit.CalendarUnitCalendar|NSCalendarUnit.CalendarUnitYear|NSCalendarUnit.CalendarUnitMonth|NSCalendarUnit.CalendarUnitDay, fromDate: tomorrow!)
-//                            tomorrowAt9AmComponents.hour = 9
-//                            scheduledDate = theCalendar.dateFromComponents(tomorrowAt9AmComponents)
+                            
+                            //tomorrow at 9am
+                            let tomorrowComponent = NSDateComponents()
+                            tomorrowComponent.day = 1
+                            let tomorrow = theCalendar.dateByAddingComponents(tomorrowComponent, toDate: currentTime, options: NSCalendarOptions(0))
+                            let tomorrowAt9AmComponents = theCalendar.components(NSCalendarUnit.CalendarUnitCalendar|NSCalendarUnit.CalendarUnitYear|NSCalendarUnit.CalendarUnitMonth|NSCalendarUnit.CalendarUnitDay, fromDate: tomorrow!)
+                            tomorrowAt9AmComponents.hour = 9
+                            scheduledDate = theCalendar.dateFromComponents(tomorrowAt9AmComponents)
                             
                             
-                            //in a minute (for testing)
-                            let timeComponent = NSDateComponents()
-                            timeComponent.second = 1
-                            scheduledDate = theCalendar.dateByAddingComponents(timeComponent, toDate: currentTime, options: NSCalendarOptions(0))
+//                            //TODO: in a minute (for testing)
+//                            let timeComponent = NSDateComponents()
+//                            timeComponent.second = 1
+//                            scheduledDate = theCalendar.dateByAddingComponents(timeComponent, toDate: currentTime, options: NSCalendarOptions(0))
                             
                             
                             let position = self.textViewPosition
-                            self.saveL8rWithDate(scheduledDate, imageData:imageData, position:position)
-                            self.flashConfirm()
-
+                           // self.flashConfirm()
                             
+                            self.saveL8rWithDate(scheduledDate, imageData:imageData, position:position)
                         }
                         
                         else if sender is UIButton {
@@ -474,6 +595,40 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
         }
     }
     
+    func confirmWithImage(savedImage: UIImage){
+        self.refreshCameraView()
+        
+        let flashConfirm = UIImageView(frame: self.view.frame)
+        flashConfirm.center = self.view.center
+        flashConfirm.image = savedImage
+        flashConfirm.contentMode = UIViewContentMode.ScaleAspectFill
+        flashConfirm.alpha = 1
+        self.view.addSubview(flashConfirm)
+        
+        
+        UIView.animateWithDuration(1.0, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0, options: UIViewAnimationOptions.CurveEaseIn,
+            animations: { () -> Void in
+                flashConfirm.alpha = 0
+                flashConfirm.center = CGPoint(x: flashConfirm.center.x, y: -(flashConfirm.frame.height))
+                
+            }, completion: {finished in
+                flashConfirm.removeFromSuperview()
+        })
+        
+//        UIView.animateKeyframesWithDuration(1.0, delay: 0, options: nil, animations: { () -> Void in
+//            flashConfirm.alpha = 1
+//            flashConfirm.frame = CGRectMake(self.view.frame.maxX, self.view.frame.maxY, 0, 0)
+//            }, completion: {finished in
+//                UIView.animateKeyframesWithDuration(0.2, delay: 0.2, options: nil, animations: { () -> Void in
+//                    flashConfirm.alpha = 0
+//                    }, completion: {finished in
+//                        flashConfirm.removeFromSuperview()
+//                })
+//                
+//        })
+        
+    }
+    
     func saveL8rWithDate(scheduledDate: NSDate, imageData: NSData, position: CGPoint){
         
         dispatch_async(dispatch_get_main_queue(), {   ()->Void in
@@ -497,6 +652,7 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
                 println("Coulnd't save \(error), \(error?.userInfo)")
             }
             self.scheduleLocalNotificationWithDueDate(scheduledDate)
+          //  self.justNoodlin(imageData)
         })
     }
     
@@ -568,7 +724,9 @@ class CameraController: UIViewController, UIGestureRecognizerDelegate, UITextVie
             }, completion: {finished in
                 UIView.animateKeyframesWithDuration(0.2, delay: 0.2, options: nil, animations: { () -> Void in
                     flashConfirm.alpha = 0
-                }, completion: nil)
+                    }, completion: {finished in
+                        flashConfirm.removeFromSuperview()
+                })
                 self.refreshCameraView()
         })
         
